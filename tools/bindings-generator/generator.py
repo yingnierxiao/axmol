@@ -5,6 +5,9 @@
 # Copyright (c) 2011 - Zynga Inc.
 
 from clang import cindex
+# Disable libclang compatibility check to work with different versions
+cindex.Config.set_compatibility_check(False)
+
 import sys
 import yaml
 import re
@@ -1607,17 +1610,28 @@ class Generator(object):
     def _parse_headers(self):
         for header in self.headers:
             print("parsing header => %s" % header)
-            tu = self.index.parse(header, self.clang_args)
-            if len(tu.diagnostics) > 0:
-                self._pretty_print(tu.diagnostics)
-                is_fatal = False
-                for d in tu.diagnostics:
-                    if d.severity >= cindex.Diagnostic.Error:
-                        is_fatal = True
-                if is_fatal:
-                    print("*** Found errors - can not continue")
-                    raise Exception("Fatal error in parsing headers")
-            self._deep_iterate(tu.cursor)
+            try:
+                # Parse with detailed diagnostics
+                tu = self.index.parse(header, self.clang_args, options=cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+
+                if len(tu.diagnostics) > 0:
+                    self._pretty_print(tu.diagnostics)
+                    is_fatal = False
+                    for d in tu.diagnostics:
+                        if d.severity >= cindex.Diagnostic.Error:
+                            is_fatal = True
+                    if is_fatal:
+                        print("*** Found errors - can not continue")
+                        raise Exception("Fatal error in parsing headers")
+                self._deep_iterate(tu.cursor)
+
+            except Exception as e:
+                print("\n!!! Parse failed with exception !!!")
+                print(f"Error: {e}")
+                print(f"Header: {header}")
+                print(f"Clang args count: {len(self.clang_args)}")
+                print("First 10 args:", self.clang_args[:10] if len(self.clang_args) > 10 else self.clang_args)
+                raise
 
     def _deep_iterate(self, cursor, depth=0):
 

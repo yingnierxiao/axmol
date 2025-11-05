@@ -16867,6 +16867,157 @@ int lua_ax_fairygui_Transition_isPlaying(lua_State* tolua_S)
 
     return 0;
 }
+int lua_ax_fairygui_Transition_play(lua_State* tolua_S)
+{
+    int argc = 0;
+    fairygui::Transition* cobj = nullptr;
+    bool ok  = true;
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"fgui.Transition",0,&tolua_err)) goto tolua_lerror;
+#endif
+    cobj = (fairygui::Transition*)tolua_tousertype(tolua_S,1,0);
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_fairygui_Transition_play'", nullptr);
+        return 0;
+    }
+#endif
+    argc = lua_gettop(tolua_S)-1;
+    do{
+        if (argc == 2) {
+            int arg0;
+            ok &= luaval_to_int32(tolua_S, 2,(int *)&arg0, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg1;
+            ok &= luaval_to_number(tolua_S, 3,&arg1, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            cobj->play(arg0, arg1);
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    do{
+        if (argc == 3) {
+            int arg0;
+            ok &= luaval_to_int32(tolua_S, 2,(int *)&arg0, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg1;
+            ok &= luaval_to_number(tolua_S, 3,&arg1, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            std::function<void ()> arg2;
+            do {
+			// Lambda binding for lua is not supported.
+			assert(false);
+		} while(0)
+		;
+
+            if (!ok) { break; }
+            cobj->play(arg0, arg1, arg2);
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    do{
+        if (argc == 0) {
+            cobj->play();
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    do{
+        if (argc == 1) {
+            std::function<void ()> arg0;
+            do {
+			// Lambda binding for lua is not supported.
+			assert(false);
+		} while(0)
+		;
+
+            if (!ok) { break; }
+            cobj->play(arg0);
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    do{
+        if (argc == 4) {
+            int arg0;
+            ok &= luaval_to_int32(tolua_S, 2,(int *)&arg0, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg1;
+            ok &= luaval_to_number(tolua_S, 3,&arg1, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg2;
+            ok &= luaval_to_number(tolua_S, 4,&arg2, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg3;
+            ok &= luaval_to_number(tolua_S, 5,&arg3, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            cobj->play(arg0, arg1, arg2, arg3);
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    do{
+        if (argc == 5) {
+            int arg0;
+            ok &= luaval_to_int32(tolua_S, 2,(int *)&arg0, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg1;
+            ok &= luaval_to_number(tolua_S, 3,&arg1, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg2;
+            ok &= luaval_to_number(tolua_S, 4,&arg2, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            double arg3;
+            ok &= luaval_to_number(tolua_S, 5,&arg3, "fgui.Transition:play");
+
+            if (!ok) { break; }
+            std::function<void ()> arg4;
+            do {
+			// Lambda binding for lua is not supported.
+			assert(false);
+		} while(0)
+		;
+
+            if (!ok) { break; }
+            cobj->play(arg0, arg1, arg2, arg3, arg4);
+            lua_settop(tolua_S, 1);
+            return 1;
+        }
+    }while(0);
+    ok  = true;
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n",  "fgui.Transition:play",argc, 4);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_fairygui_Transition_play'.",&tolua_err);
+#endif
+
+    return 0;
+}
 int lua_ax_fairygui_Transition_playReverse(lua_State* tolua_S)
 {
     int argc = 0;
@@ -17788,6 +17939,7 @@ int lua_register_ax_fairygui_Transition(lua_State* tolua_S)
         tolua_function(tolua_S,"new",lua_ax_fairygui_Transition_constructor);
         tolua_function(tolua_S,"getOwner",lua_ax_fairygui_Transition_getOwner);
         tolua_function(tolua_S,"isPlaying",lua_ax_fairygui_Transition_isPlaying);
+        tolua_function(tolua_S,"play",lua_ax_fairygui_Transition_play);
         tolua_function(tolua_S,"playReverse",lua_ax_fairygui_Transition_playReverse);
         tolua_function(tolua_S,"changePlayTimes",lua_ax_fairygui_Transition_changePlayTimes);
         tolua_function(tolua_S,"stop",lua_ax_fairygui_Transition_stop);

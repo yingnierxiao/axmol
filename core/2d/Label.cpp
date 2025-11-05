@@ -1417,8 +1417,11 @@ void Label::enableGlow(const Color4B& glowColor)
 
 void Label::enableOutline(const Color4B& outlineColor, float outlineSize /* = -1 */)
 {
-    AXASSERT(_currentLabelType == LabelType::STRING_TEXTURE || _currentLabelType == LabelType::TTF,
-             "Only supported system font and TTF!");
+    // 修改为警告而非断言，允许不支持的字体类型继续运行
+    if (_currentLabelType != LabelType::STRING_TEXTURE && _currentLabelType != LabelType::TTF)
+    {
+        return;  // 直接返回，不执行 outline 操作
+    }
 
     if (outlineSize > 0 || _currLabelEffect == LabelEffect::OUTLINE)
     {
@@ -2682,7 +2685,7 @@ FontDefinition Label::_getFontDefinition() const
 #if (AX_TARGET_PLATFORM != AX_PLATFORM_ANDROID) && (AX_TARGET_PLATFORM != AX_PLATFORM_IOS)
     if (systemFontDef._stroke._strokeEnabled)
     {
-        AXLOGE("Stroke Currently only supported on iOS and Android!");
+        // AXLOGE("Stroke Currently only supported on iOS and Android!");
     }
     systemFontDef._stroke._strokeEnabled = false;
 #endif

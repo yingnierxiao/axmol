@@ -47,3 +47,6 @@
 #include "Particle3D/src/Particle3D/Particle3DRender.h"
 #include "Particle3D/src/Particle3D/ParticleSystem3D.h"
 #include "Particle3D/src/Particle3D/PU/PUParticleSystem3D.h"
+
+// Inspector - ImGui based scene debugger
+#include "Inspector/src/Inspector/Inspector.h"

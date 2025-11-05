@@ -163,7 +163,8 @@ def main():
     cxx_generator_root = os.path.abspath(os.path.join(project_root, 'tools/bindings-generator'))
 
     # clang flags
-    clang_flags = "-nostdinc -x c++ -std=c++23 -fsigned-char"
+    # Changed from c++23 to c++20 for compatibility with NDK r23c clang 12.0.9
+    clang_flags = "-nostdinc -x c++ -std=c++20 -fsigned-char"
 
     # determine android flags
     android_flags = '-target armv7-none-linux-androideabi -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -DANDROID -D__ANDROID_API__=21'

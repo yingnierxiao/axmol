@@ -8721,6 +8721,565 @@ int lua_register_ax_extension_PUParticleSystem3D(lua_State* tolua_S)
     g_typeCast[typeName] = "ax.PUParticleSystem3D";
     return 1;
 }
+
+int lua_ax_extension_Inspector_openForScene(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_openForScene'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 1) 
+    {
+        ax::Scene* arg0;
+
+        ok &= luaval_to_object<ax::Scene>(tolua_S, 2, "ax.Scene",&arg0, "ax.Inspector:openForScene");
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_openForScene'", nullptr);
+            return 0;
+        }
+        cobj->openForScene(arg0);
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:openForScene",argc, 1);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_openForScene'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_openForCurrentScene(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_openForCurrentScene'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 0) 
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_openForCurrentScene'", nullptr);
+            return 0;
+        }
+        cobj->openForCurrentScene();
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:openForCurrentScene",argc, 0);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_openForCurrentScene'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_close(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_close'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 0) 
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_close'", nullptr);
+            return 0;
+        }
+        cobj->close();
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:close",argc, 0);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_close'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_setAutoAddToScenes(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_setAutoAddToScenes'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 1) 
+    {
+        bool arg0;
+
+        ok &= luaval_to_boolean(tolua_S, 2,&arg0, "ax.Inspector:setAutoAddToScenes");
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_setAutoAddToScenes'", nullptr);
+            return 0;
+        }
+        cobj->setAutoAddToScenes(arg0);
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:setAutoAddToScenes",argc, 1);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_setAutoAddToScenes'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_getFontPath(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_getFontPath'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 0) 
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_getFontPath'", nullptr);
+            return 0;
+        }
+        auto&& ret = cobj->getFontPath();
+        lua_pushlstring(tolua_S,ret.data(),ret.length());
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:getFontPath",argc, 0);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_getFontPath'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_getFontSize(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_getFontSize'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 0) 
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_getFontSize'", nullptr);
+            return 0;
+        }
+        auto&& ret = cobj->getFontSize();
+        tolua_pushnumber(tolua_S,(lua_Number)ret);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:getFontSize",argc, 0);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_getFontSize'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_setFontPath(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_setFontPath'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 1) 
+    {
+        std::string_view arg0;
+
+        ok &= luaval_to_std_string_view(tolua_S, 2,&arg0, "ax.Inspector:setFontPath");
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_setFontPath'", nullptr);
+            return 0;
+        }
+        cobj->setFontPath(arg0);
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:setFontPath",argc, 1);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_setFontPath'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_setFontSize(lua_State* tolua_S)
+{
+    int argc = 0;
+    ax::extension::Inspector* cobj = nullptr;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertype(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    cobj = (ax::extension::Inspector*)tolua_tousertype(tolua_S,1,0);
+
+#if _AX_DEBUG >= 1
+    if (!cobj)
+    {
+        tolua_error(tolua_S,"invalid 'cobj' in function 'lua_ax_extension_Inspector_setFontSize'", nullptr);
+        return 0;
+    }
+#endif
+
+    argc = lua_gettop(tolua_S)-1;
+    if (argc == 1) 
+    {
+        double arg0;
+
+        ok &= luaval_to_number(tolua_S, 2,&arg0, "ax.Inspector:setFontSize");
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_setFontSize'", nullptr);
+            return 0;
+        }
+        cobj->setFontSize(arg0);
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d \n", "ax.Inspector:setFontSize",argc, 1);
+    return 0;
+
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_setFontSize'.",&tolua_err);
+#endif
+
+    return 0;
+}
+int lua_ax_extension_Inspector_getInstance(lua_State* tolua_S)
+{
+    int argc = 0;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertable(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    argc = lua_gettop(tolua_S) - 1;
+
+    if (argc == 0)
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_getInstance'", nullptr);
+            return 0;
+        }
+        auto&& ret = ax::extension::Inspector::getInstance();
+        object_to_luaval<ax::extension::Inspector>(tolua_S, "ax.Inspector",(ax::extension::Inspector*)ret);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d\n ", "ax.Inspector:getInstance",argc, 0);
+    return 0;
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_getInstance'.",&tolua_err);
+#endif
+    return 0;
+}
+int lua_ax_extension_Inspector_destroyInstance(lua_State* tolua_S)
+{
+    int argc = 0;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertable(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    argc = lua_gettop(tolua_S) - 1;
+
+    if (argc == 0)
+    {
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_destroyInstance'", nullptr);
+            return 0;
+        }
+        ax::extension::Inspector::destroyInstance();
+        lua_settop(tolua_S, 1);
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d\n ", "ax.Inspector:destroyInstance",argc, 0);
+    return 0;
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_destroyInstance'.",&tolua_err);
+#endif
+    return 0;
+}
+int lua_ax_extension_Inspector_getNodeTypeName(lua_State* tolua_S)
+{
+    int argc = 0;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertable(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    argc = lua_gettop(tolua_S) - 1;
+
+    if (argc == 1)
+    {
+        ax::Node* arg0;
+        ok &= luaval_to_object<ax::Node>(tolua_S, 2, "ax.Node",&arg0, "ax.Inspector:getNodeTypeName");
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_getNodeTypeName'", nullptr);
+            return 0;
+        }
+        auto&& ret = ax::extension::Inspector::getNodeTypeName(arg0);
+        lua_pushlstring(tolua_S,ret.c_str(),ret.length());
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d\n ", "ax.Inspector:getNodeTypeName",argc, 1);
+    return 0;
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_getNodeTypeName'.",&tolua_err);
+#endif
+    return 0;
+}
+int lua_ax_extension_Inspector_demangle(lua_State* tolua_S)
+{
+    int argc = 0;
+    bool ok  = true;
+
+#if _AX_DEBUG >= 1
+    tolua_Error tolua_err;
+#endif
+
+#if _AX_DEBUG >= 1
+    if (!tolua_isusertable(tolua_S,1,"ax.Inspector",0,&tolua_err)) goto tolua_lerror;
+#endif
+
+    argc = lua_gettop(tolua_S) - 1;
+
+    if (argc == 1)
+    {
+        const char* arg0;
+        std::string arg0_tmp; ok &= luaval_to_std_string(tolua_S, 2, &arg0_tmp, "ax.Inspector:demangle"); arg0 = arg0_tmp.c_str();
+        if(!ok)
+        {
+            tolua_error(tolua_S,"invalid arguments in function 'lua_ax_extension_Inspector_demangle'", nullptr);
+            return 0;
+        }
+        auto&& ret = ax::extension::Inspector::demangle(arg0);
+        lua_pushlstring(tolua_S,ret.c_str(),ret.length());
+        return 1;
+    }
+    luaL_error(tolua_S, "%s has wrong number of arguments: %d, was expecting %d\n ", "ax.Inspector:demangle",argc, 1);
+    return 0;
+#if _AX_DEBUG >= 1
+    tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'lua_ax_extension_Inspector_demangle'.",&tolua_err);
+#endif
+    return 0;
+}
+static int lua_ax_extension_Inspector_finalize(lua_State* tolua_S)
+{
+    AXLOGV("luabindings: finalizing LUA object (Inspector)");
+    return 0;
+}
+
+int lua_register_ax_extension_Inspector(lua_State* tolua_S)
+{
+    tolua_usertype(tolua_S,"ax.Inspector");
+    tolua_cclass(tolua_S,"Inspector","ax.Inspector","",nullptr);
+
+    tolua_beginmodule(tolua_S,"Inspector");
+        tolua_function(tolua_S,"openForScene",lua_ax_extension_Inspector_openForScene);
+        tolua_function(tolua_S,"openForCurrentScene",lua_ax_extension_Inspector_openForCurrentScene);
+        tolua_function(tolua_S,"close",lua_ax_extension_Inspector_close);
+        tolua_function(tolua_S,"setAutoAddToScenes",lua_ax_extension_Inspector_setAutoAddToScenes);
+        tolua_function(tolua_S,"getFontPath",lua_ax_extension_Inspector_getFontPath);
+        tolua_function(tolua_S,"getFontSize",lua_ax_extension_Inspector_getFontSize);
+        tolua_function(tolua_S,"setFontPath",lua_ax_extension_Inspector_setFontPath);
+        tolua_function(tolua_S,"setFontSize",lua_ax_extension_Inspector_setFontSize);
+        tolua_function(tolua_S,"getInstance", lua_ax_extension_Inspector_getInstance);
+        tolua_function(tolua_S,"destroyInstance", lua_ax_extension_Inspector_destroyInstance);
+        tolua_function(tolua_S,"getNodeTypeName", lua_ax_extension_Inspector_getNodeTypeName);
+        tolua_function(tolua_S,"demangle", lua_ax_extension_Inspector_demangle);
+    tolua_endmodule(tolua_S);
+    auto typeName = typeid(ax::extension::Inspector).name(); // rtti is literal storage
+    g_luaType[reinterpret_cast<uintptr_t>(typeName)] = "ax.Inspector";
+    g_typeCast[typeName] = "ax.Inspector";
+    return 1;
+}
 TOLUA_API int register_all_ax_extension(lua_State* tolua_S)
 {
 	tolua_open(tolua_S);
@@ -8738,6 +9297,7 @@ TOLUA_API int register_all_ax_extension(lua_State* tolua_S)
 	lua_register_ax_extension_EventListenerAssetsManagerEx(tolua_S);
 	lua_register_ax_extension_ParticleSystem3D(tolua_S);
 	lua_register_ax_extension_PUParticleSystem3D(tolua_S);
+	lua_register_ax_extension_Inspector(tolua_S);
 
 	tolua_endmodule(tolua_S);
 	return 1;

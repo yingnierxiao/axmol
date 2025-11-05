@@ -395,6 +395,12 @@ static int lua_ax_fairygui_play(lua_State* L)
     }
 #endif
     argc = lua_gettop(L) - 1;
+    if (0 == argc)
+    {
+        // play() - 无参数，直接播放
+        self->play();
+        return 0;
+    }
     if (1 == argc)
     {
 #if _AX_DEBUG >= 1
@@ -440,7 +446,7 @@ static int lua_ax_fairygui_play(lua_State* L)
         ScriptHandlerMgr::getInstance()->addCustomHandler((void*)self, handler);
         return 0;
     }
-    luaL_error(L, "'addEventListener' function of Transition has wrong number of arguments: %d, was expecting %d\n", argc, 1);
+    luaL_error(L, "'play' function of Transition has wrong number of arguments: %d, was expecting 0, 1, or 3\n", argc);
     return 0;
 #if _AX_DEBUG >= 1
 tolua_lerror:

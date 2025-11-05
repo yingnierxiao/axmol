@@ -5,9 +5,107 @@
 #include "display/FUISprite.h"
 #include "utils/ByteBuffer.h"
 #include "utils/ToolSet.h"
+#include "spine/spine-cocos2dx.h"
+#include <unordered_map>
 
 NS_FGUI_BEGIN
 using namespace ax;
+
+// Spine资源路径映射表（从spine.ini加载）
+static std::unordered_map<std::string, std::string> g_spinePathMap;
+static bool g_spineConfigLoaded = false;
+
+// 加载spine.ini配置文件
+static void loadSpineConfig()
+{
+    if (g_spineConfigLoaded)
+        return;
+
+    std::string configPath = "ini/spine.ini";
+    std::string fullPath = FileUtils::getInstance()->fullPathForFilename(configPath);
+
+    if (fullPath.empty() || fullPath == configPath)
+    {
+        AXLOG("[GLoader] spine.ini not found: %s", configPath.c_str());
+        g_spineConfigLoaded = true;
+        return;
+    }
+
+    std::string content = FileUtils::getInstance()->getStringFromFile(fullPath);
+    if (content.empty())
+    {
+        AXLOG("[GLoader] Failed to read spine.ini: %s", fullPath.c_str());
+        g_spineConfigLoaded = true;
+        return;
+    }
+
+    // 解析INI文件（key=value格式）
+    size_t pos = 0;
+    size_t lineCount = 0;
+    while (pos < content.length())
+    {
+        size_t endPos = content.find('\n', pos);
+        if (endPos == std::string::npos)
+            endPos = content.length();
+
+        std::string line = content.substr(pos, endPos - pos);
+
+        // 移除回车符
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
+        // 跳过空行和注释
+        if (!line.empty() && line[0] != '#' && line[0] != ';')
+        {
+            size_t equalPos = line.find('=');
+            if (equalPos != std::string::npos)
+            {
+                std::string key = line.substr(0, equalPos);
+                std::string value = line.substr(equalPos + 1);
+
+                // 去除首尾空格
+                key.erase(0, key.find_first_not_of(" \t"));
+                key.erase(key.find_last_not_of(" \t") + 1);
+                value.erase(0, value.find_first_not_of(" \t"));
+                value.erase(value.find_last_not_of(" \t") + 1);
+
+                if (!key.empty() && !value.empty())
+                {
+                    g_spinePathMap[key] = value;
+                    lineCount++;
+                }
+            }
+        }
+
+        pos = endPos + 1;
+    }
+
+    AXLOG("[GLoader] Loaded spine.ini: %zu entries", lineCount);
+    g_spineConfigLoaded = true;
+}
+
+// 解析spine://URL并返回实际文件路径
+static std::string resolveSpineURL(const std::string& url)
+{
+    // 确保配置已加载
+    if (!g_spineConfigLoaded)
+        loadSpineConfig();
+
+    // 解析spine://协议
+    if (url.compare(0, 8, "spine://") != 0)
+        return "";
+
+    std::string resourceName = url.substr(8);
+    auto it = g_spinePathMap.find(resourceName);
+    if (it == g_spinePathMap.end())
+    {
+        AXLOG("[GLoader] Spine resource not found in config: %s", resourceName.c_str());
+        return "";
+    }
+
+    // 返回路径（不需要加res/前缀，因为已经在搜索路径中）
+    return it->second;
+}
 
 GLoader::GLoader()
     : _autoSize(false),
@@ -278,6 +376,188 @@ void GLoader::loadFromPackage()
 
 void GLoader::loadExternal()
 {
+    // 处理spine://协议
+    if (_url.compare(0, 8, "spine://") == 0)
+    {
+        std::string spinePath = resolveSpineURL(_url);
+        if (spinePath.empty())
+        {
+            AXLOG("[GLoader] resolveSpineURL returned empty for: %s", _url.c_str());
+            onExternalLoadFailed();
+            return;
+        }
+
+        AXLOG("[GLoader] Resolved spine path: %s", spinePath.c_str());
+
+        // 参考GLoader3D的实现，加载Spine动画
+        // 获取文件名（路径的最后一部分）
+        size_t lastSlash = spinePath.find_last_of("/\\");
+        std::string fileName = (lastSlash != std::string::npos) ? spinePath.substr(lastSlash + 1) : spinePath;
+
+        // 构建完整的文件路径（假设文件在同名子目录中）
+        std::string basePath = spinePath + "/" + fileName;
+
+        AXLOG("[GLoader] Base path: %s", basePath.c_str());
+
+        // 查找atlas文件
+        size_t pos = basePath.find_last_of('.');
+        std::string atlasFile;
+        if (pos != std::string::npos)
+        {
+            atlasFile = basePath.substr(0, pos + 1) + "atlas";
+        }
+        else
+        {
+            // 没有扩展名，尝试.atlas
+            atlasFile = basePath + ".atlas";
+        }
+
+        // 检查atlas.txt作为备选
+        if (!ToolSet::isFileExist(atlasFile))
+        {
+            if (pos != std::string::npos)
+                atlasFile = spinePath.substr(0, pos + 1) + "atlas.txt";
+            else
+                atlasFile = spinePath + ".atlas.txt";
+        }
+
+        AXLOG("[GLoader] Atlas file: %s (exists: %d)", atlasFile.c_str(), ToolSet::isFileExist(atlasFile));
+
+        // 尝试创建Spine动画
+        spine::SkeletonAnimation* skeletonAni = nullptr;
+
+        // 检查文件存在性
+        std::string jsonFile = (pos != std::string::npos) ? basePath : basePath + ".json";
+        std::string skelFile = (pos != std::string::npos) ? basePath : basePath + ".skel";
+        bool hasSkel = ToolSet::isFileExist(skelFile);
+        bool hasJson = ToolSet::isFileExist(jsonFile);
+
+        AXLOG("[GLoader] Files check - .skel: %d, .json: %d", hasSkel, hasJson);
+
+        std::string spineFile;
+        bool isBinaryFormat = false;
+
+        // 确定使用哪个文件
+        if (hasSkel)
+        {
+            spineFile = skelFile;
+            isBinaryFormat = true;
+            AXLOG("[GLoader] Using .skel file (binary): %s", spineFile.c_str());
+        }
+        else if (hasJson)
+        {
+            spineFile = jsonFile;
+
+            // 检查文件头判断是否为二进制格式
+            // Spine二进制格式的特征：文件开头不是 '{' 或 '['
+            auto fileData = FileUtils::getInstance()->getDataFromFile(spineFile);
+            if (fileData.getSize() > 0)
+            {
+                unsigned char firstByte = fileData.getBytes()[0];
+                // JSON格式通常以 '{' (0x7B) 或 '[' (0x5B) 开头，或空白字符
+                // 二进制格式通常以其他字节开头
+                if (firstByte != '{' && firstByte != '[' && firstByte != ' ' &&
+                    firstByte != '\t' && firstByte != '\n' && firstByte != '\r')
+                {
+                    isBinaryFormat = true;
+                    AXLOG("[GLoader] Detected binary format in .json file (first byte: 0x%02X)", firstByte);
+                }
+                else
+                {
+                    AXLOG("[GLoader] Detected JSON text format (first byte: 0x%02X)", firstByte);
+                }
+            }
+        }
+        else
+        {
+            AXLOG("[GLoader] No spine file found");
+            onExternalLoadFailed();
+            return;
+        }
+
+        // 根据检测结果选择加载方式
+        if (isBinaryFormat)
+        {
+            AXLOG("[GLoader] Loading as binary format...");
+            try {
+                skeletonAni = spine::SkeletonAnimation::createWithBinaryFile(spineFile, atlasFile);
+                AXLOG("[GLoader] Binary format result: %s", skeletonAni ? "success" : "failed");
+            } catch (const std::exception& e) {
+                std::string errorMsg = e.what();
+                AXLOG("[GLoader] Binary format exception: %s", errorMsg.c_str());
+
+                // 检查是否是版本不匹配错误
+                if (errorMsg.find("version") != std::string::npos ||
+                    errorMsg.find("does not match") != std::string::npos)
+                {
+                    AXLOG("[GLoader] ========================================");
+                    AXLOG("[GLoader] ERROR: Spine version mismatch!");
+                    AXLOG("[GLoader] Please re-export spine files with Spine 4.2");
+                    AXLOG("[GLoader] File: %s", spineFile.c_str());
+                    AXLOG("[GLoader] URL: %s", _url.c_str());
+                    AXLOG("[GLoader] ========================================");
+                }
+            } catch (...) {
+                AXLOG("[GLoader] Binary format unknown exception");
+            }
+        }
+        else
+        {
+            AXLOG("[GLoader] Loading as JSON text format...");
+            try {
+                skeletonAni = spine::SkeletonAnimation::createWithJsonFile(spineFile, atlasFile);
+                AXLOG("[GLoader] JSON format result: %s", skeletonAni ? "success" : "failed");
+            } catch (const std::exception& e) {
+                std::string errorMsg = e.what();
+                AXLOG("[GLoader] JSON format exception: %s", errorMsg.c_str());
+
+                // 检查是否是版本不匹配错误
+                if (errorMsg.find("version") != std::string::npos ||
+                    errorMsg.find("does not match") != std::string::npos)
+                {
+                    AXLOG("[GLoader] ========================================");
+                    AXLOG("[GLoader] ERROR: Spine version mismatch!");
+                    AXLOG("[GLoader] Please re-export spine files with Spine 4.2");
+                    AXLOG("[GLoader] File: %s", spineFile.c_str());
+                    AXLOG("[GLoader] URL: %s", _url.c_str());
+                    AXLOG("[GLoader] ========================================");
+                }
+            } catch (...) {
+                AXLOG("[GLoader] JSON format unknown exception");
+            }
+        }
+
+        if (skeletonAni)
+        {
+            _contentStatus = 5; // 使用新的状态码表示Spine内容
+
+            // 隐藏默认的sprite内容
+            _content->setVisible(false);
+
+            // 添加Spine节点到displayObject
+            _displayObject->addChild(skeletonAni);
+
+            // 将Spine节点保存为用户数据，以便后续管理
+            // 使用tag来标识这是一个Spine节点
+            skeletonAni->setTag(9999); // 使用特殊tag标识Spine节点
+
+            // 获取骨骼尺寸作为sourceSize
+            auto bounds = skeletonAni->getBoundingBox();
+            sourceSize.width = bounds.size.width;
+            sourceSize.height = bounds.size.height;
+
+            updateLayout();
+            AXLOG("[GLoader] Spine animation loaded successfully: %s", _url.c_str());
+        }
+        else
+        {
+            AXLOG("[GLoader] Failed to load Spine animation: %s", _url.c_str());
+            onExternalLoadFailed();
+        }
+        return;
+    }
+
+    // 原有的图片加载逻辑
     auto tex = Director::getInstance()->getTextureCache()->addImage(_url);
     if (tex)
     {
@@ -318,12 +598,31 @@ void GLoader::clearContent()
         _content->stopAction(_playAction);
     }
 
+    // 清理Spine内容（状态码5）
+    if (_contentStatus == 5)
+    {
+        // 查找并移除Spine节点（tag=9999）
+        auto spineNode = _displayObject->getChildByTag(9999);
+        if (spineNode != nullptr)
+        {
+            _displayObject->removeChild(spineNode);
+        }
+
+        // 恢复_content的可见性
+        if (_content != nullptr)
+        {
+            _content->setVisible(true);
+        }
+    }
+
     if (_content2 != nullptr)
     {
         _displayObject->removeChild(_content2->displayObject());
         AX_SAFE_RELEASE_NULL(_content2);
     }
-    ((FUISprite*)_content)->clearContent();
+
+    if (_contentStatus != 5) // 只有非Spine内容才调用clearContent
+        ((FUISprite*)_content)->clearContent();
 
     _contentItem = nullptr;
     _contentStatus = 0;
