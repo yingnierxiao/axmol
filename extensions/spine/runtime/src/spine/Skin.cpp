@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,9 +23,13 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
 
 #include <spine/Skin.h>
 
@@ -80,7 +84,7 @@ void Skin::AttachmentMap::remove(size_t slotIndex, const String &attachmentName)
 
 int Skin::AttachmentMap::findInBucket(Vector<Entry> &bucket, const String &attachmentName) {
 	for (size_t i = 0; i < bucket.size(); i++)
-		if (bucket[i]._name == attachmentName) return (int) i;
+		if (bucket[i]._name == attachmentName) return i;
 	return -1;
 }
 
@@ -88,7 +92,7 @@ Skin::AttachmentMap::Entries Skin::AttachmentMap::getEntries() {
 	return Skin::AttachmentMap::Entries(_buckets);
 }
 
-Skin::Skin(const String &name) : _name(name), _attachments(), _color(0.99607843f, 0.61960787f, 0.30980393f, 1) {
+Skin::Skin(const String &name) : _name(name), _attachments() {
 	assert(_name.length() > 0);
 }
 
@@ -144,7 +148,7 @@ void Skin::attachAll(Skeleton &skeleton, Skin &oldSkin) {
 	Skin::AttachmentMap::Entries entries = oldSkin.getAttachments();
 	while (entries.hasNext()) {
 		Skin::AttachmentMap::Entry &entry = entries.next();
-		int slotIndex = (int) entry._slotIndex;
+		int slotIndex = entry._slotIndex;
 		Slot *slot = slots[slotIndex];
 
 		if (slot->getAttachment() == entry._attachment) {

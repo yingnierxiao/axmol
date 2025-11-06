@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,9 +23,13 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
 
 #include <spine/BoneData.h>
 
@@ -44,11 +48,9 @@ BoneData::BoneData(int index, const String &name, BoneData *parent) : _index(ind
 																	  _scaleY(1),
 																	  _shearX(0),
 																	  _shearY(0),
-																	  _inherit(Inherit_Normal),
+																	  _transformMode(TransformMode_Normal),
 																	  _skinRequired(false),
-																	  _color(),
-																	  _icon(),
-																	  _visible(true) {
+																	  _color() {
 	assert(index >= 0);
 	assert(_name.length() > 0);
 }
@@ -129,12 +131,12 @@ void BoneData::setShearY(float inValue) {
 	_shearY = inValue;
 }
 
-Inherit BoneData::getInherit() {
-	return _inherit;
+TransformMode BoneData::getTransformMode() {
+	return _transformMode;
 }
 
-void BoneData::setInherit(Inherit inValue) {
-	_inherit = inValue;
+void BoneData::setTransformMode(TransformMode inValue) {
+	_transformMode = inValue;
 }
 
 bool BoneData::isSkinRequired() {
@@ -147,20 +149,4 @@ void BoneData::setSkinRequired(bool inValue) {
 
 Color &BoneData::getColor() {
 	return _color;
-}
-
-const String &BoneData::getIcon() {
-	return _icon;
-}
-
-void BoneData::setIcon(const String &icon) {
-	this->_icon = icon;
-}
-
-bool BoneData::isVisible() {
-	return _visible;
-}
-
-void BoneData::setVisible(bool inValue) {
-	this->_visible = inValue;
 }

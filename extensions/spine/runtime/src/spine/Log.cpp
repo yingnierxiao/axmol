@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,8 +23,8 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
 #include <spine/Log.h>
@@ -37,7 +37,7 @@ void spine::spDebug_printSkeletonData(SkeletonData *skeletonData) {
 	int i, n;
 	spDebug_printBoneDatas(skeletonData->getBones());
 
-	for (i = 0, n = (int) skeletonData->getAnimations().size(); i < n; i++) {
+	for (i = 0, n = skeletonData->getAnimations().size(); i < n; i++) {
 		spDebug_printAnimation(skeletonData->getAnimations()[i]);
 	}
 }
@@ -69,7 +69,7 @@ void spine::spDebug_printAnimation(Animation *animation) {
 	int i, n;
 	printf("Animation %s: %zu timelines\n", animation->getName().buffer(), animation->getTimelines().size());
 
-	for (i = 0, n = (int) animation->getTimelines().size(); i < n; i++) {
+	for (i = 0, n = animation->getTimelines().size(); i < n; i++) {
 		Timeline *timeline = animation->getTimelines()[i];
 		spDebug_printTimeline(timeline);
 	}
@@ -77,7 +77,7 @@ void spine::spDebug_printAnimation(Animation *animation) {
 
 void spine::spDebug_printBoneDatas(Vector<BoneData *> &boneDatas) {
 	int i, n;
-	for (i = 0, n = (int) boneDatas.size(); i < n; i++) {
+	for (i = 0, n = boneDatas.size(); i < n; i++) {
 		spDebug_printBoneData(boneDatas[i]);
 	}
 }
@@ -94,7 +94,7 @@ void spine::spDebug_printSkeleton(Skeleton *skeleton) {
 
 void spine::spDebug_printBones(Vector<Bone *> &bones) {
 	int i, n;
-	for (i = 0, n = (int) bones.size(); i < n; i++) {
+	for (i = 0, n = bones.size(); i < n; i++) {
 		spDebug_printBone(bones[i]);
 	}
 }
@@ -116,7 +116,7 @@ void spine::spDebug_printFloats(float *values, int numFloats) {
 void spine::spDebug_printFloats(Vector<float> &values) {
 	int i, n;
 	printf("(%zu) [", values.size());
-	for (i = 0, n = (int) values.size(); i < n; i++) {
+	for (i = 0, n = values.size(); i < n; i++) {
 		printf("%f, ", values[i]);
 	}
 	printf("]");

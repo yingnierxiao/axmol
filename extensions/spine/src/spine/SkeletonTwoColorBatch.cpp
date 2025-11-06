@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,20 +23,22 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-#include <spine/spine-axmol.h>
-
-#include "base/Types.h"
-#include "base/Utils.h"
+#include <spine/spine-cocos2dx.h>
 #include <algorithm>
 #include <spine/Extension.h>
 #include <stddef.h>// offsetof
 
-#include "renderer/backend/DriverBase.h"
+#include "base/Types.h"
+#include "base/Utils.h"
+
+#include "xxhash.h"
 #include "renderer/Shaders.h"
+#include "renderer/backend/DriverBase.h"
+
 #include "xxhash.h"
 
 USING_NS_AX;
@@ -45,21 +47,22 @@ using std::max;
 #define INITIAL_SIZE (10000)
 #define MAX_VERTICES 64000
 #define MAX_INDICES 64000
-
 namespace {
+
+
 
 	std::shared_ptr<backend::ProgramState> __twoColorProgramState = nullptr;
 	backend::UniformLocation __locPMatrix;
 	backend::UniformLocation __locTexture;
 
-	static void updateProgramStateLayout(backend::ProgramState *programState) {
-		__locPMatrix = programState->getUniformLocation("u_PMatrix");
-		__locTexture = programState->getUniformLocation("u_tex0");
+    static void updateProgramStateLayout(backend::ProgramState* programState) {
+        __locPMatrix = programState->getUniformLocation("u_PMatrix");
+        __locTexture = programState->getUniformLocation("u_tex0");
 
-		auto locPosition = programState->getAttributeLocation("a_position");
+        auto locPosition = programState->getAttributeLocation("a_position");
         auto locTexcoord = programState->getAttributeLocation("a_texCoord");
-		auto locColor = programState->getAttributeLocation("a_color");
-		auto locColor2 = programState->getAttributeLocation("a_color2");
+        auto locColor = programState->getAttributeLocation("a_color");
+        auto locColor2 = programState->getAttributeLocation("a_color2");
 
         auto vertexLayout = programState->getMutableVertexLayout();
         vertexLayout->setAttrib("a_position", locPosition, backend::VertexFormat::FLOAT3,
@@ -71,15 +74,16 @@ namespace {
         vertexLayout->setAttrib("a_texCoord", locTexcoord, backend::VertexFormat::FLOAT2,
                                      offsetof(spine::V3F_C4B_C4B_T2F, texCoords), false);
         vertexLayout->setStride(sizeof(spine::V3F_C4B_C4B_T2F));
-	}
+    }
 
 	static void initTwoColorProgramState() {
 		if (__twoColorProgramState) {
 			return;
 		}
-		auto program       = ProgramManager::getInstance()->loadProgram("custom/spineTwoColorTint_vs",
-                                                                                      "custom/spineTwoColorTint_fs");
-		auto *programState = new backend::ProgramState(program);
+		auto program = ProgramManager::getInstance()->loadProgram("custom/spineTwoColorTint_vs",
+            "custom/spineTwoColorTint_fs");
+        auto* programState = new backend::ProgramState(program);
+
 		updateProgramStateLayout(programState);
 
 		__twoColorProgramState = std::shared_ptr<backend::ProgramState>(programState);
@@ -93,10 +97,10 @@ namespace spine {
 		_type = RenderCommand::Type::CUSTOM_COMMAND;
 	}
 
-	void TwoColorTrianglesCommand::init(float globalOrder, axmol::Texture2D *texture, axmol::backend::ProgramState *programState, BlendFunc blendType, const TwoColorTriangles &triangles, const Mat4 &mv, uint32_t flags) {
+	void TwoColorTrianglesCommand::init(float globalOrder, ax::Texture2D *texture, ax::backend::ProgramState *programState, BlendFunc blendType, const TwoColorTriangles &triangles, const Mat4 &mv, uint32_t flags) {
 
 		updateCommandPipelineDescriptor(programState);
-		const axmol::Mat4 &projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+		const ax::Mat4 &projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
 		auto finalMatrix = projectionMat * mv;
 
@@ -132,7 +136,7 @@ namespace spine {
 	}
 
 
-	void TwoColorTrianglesCommand::updateCommandPipelineDescriptor(axmol::backend::ProgramState *programState) {
+	void TwoColorTrianglesCommand::updateCommandPipelineDescriptor(ax::backend::ProgramState *programState) {
 		// OPTIMIZE ME: all commands belong a same Node should share a same programState like SkeletonBatch
 		if (!__twoColorProgramState) {
 			initTwoColorProgramState();
@@ -278,7 +282,7 @@ namespace spine {
 	unsigned short *SkeletonTwoColorBatch::allocateIndices(uint32_t numIndices) {
 		if (_indices.getCapacity() - _indices.size() < numIndices) {
 			unsigned short *oldData = _indices.buffer();
-			int oldSize = (int)_indices.size();
+			int oldSize = _indices.size();
 			_indices.ensureCapacity(_indices.size() + numIndices);
 			unsigned short *newData = _indices.buffer();
 			for (uint32_t i = 0; i < this->_nextFreeCommand; i++) {
@@ -299,7 +303,7 @@ namespace spine {
 		_indices.setSize(_indices.size() - numIndices, 0);
 	}
 
-	TwoColorTrianglesCommand *SkeletonTwoColorBatch::addCommand(axmol::Renderer *renderer, float globalOrder, axmol::Texture2D *texture, backend::ProgramState *programState, axmol::BlendFunc blendType, const TwoColorTriangles &triangles, const axmol::Mat4 &mv, uint32_t flags) {
+	TwoColorTrianglesCommand *SkeletonTwoColorBatch::addCommand(ax::Renderer *renderer, float globalOrder, ax::Texture2D *texture, backend::ProgramState *programState, ax::BlendFunc blendType, const TwoColorTriangles &triangles, const ax::Mat4 &mv, uint32_t flags) {
 		TwoColorTrianglesCommand *command = nextFreeCommand();
 		command->init(globalOrder, texture, programState, blendType, triangles, mv, flags);
 		command->updateVertexAndIndexBuffer(renderer, triangles.verts, triangles.vertCount, triangles.indices, triangles.indexCount);
@@ -307,7 +311,7 @@ namespace spine {
 		return command;
 	}
 
-	void SkeletonTwoColorBatch::batch(axmol::Renderer *renderer, TwoColorTrianglesCommand *command) {
+	void SkeletonTwoColorBatch::batch(ax::Renderer *renderer, TwoColorTrianglesCommand *command) {
 		if (_numVerticesBuffer + command->getTriangles().vertCount >= MAX_VERTICES || _numIndicesBuffer + command->getTriangles().indexCount >= MAX_INDICES) {
 			flush(renderer, _lastCommand);
 		}
@@ -338,7 +342,7 @@ namespace spine {
 		_lastCommand = command;
 	}
 
-	void SkeletonTwoColorBatch::flush(axmol::Renderer *renderer, TwoColorTrianglesCommand *materialCommand) {
+	void SkeletonTwoColorBatch::flush(ax::Renderer *renderer, TwoColorTrianglesCommand *materialCommand) {
 		if (!materialCommand)
 			return;
 
@@ -363,8 +367,8 @@ namespace spine {
 
 	TwoColorTrianglesCommand *SkeletonTwoColorBatch::nextFreeCommand() {
 		if (_commandsPool.size() <= _nextFreeCommand) {
-			unsigned int newSize = (int)_commandsPool.size() * 2 + 1;
-			for (int i = (int)_commandsPool.size(); i < newSize; i++) {
+			unsigned int newSize = _commandsPool.size() * 2 + 1;
+			for (int i = _commandsPool.size(); i < newSize; i++) {
 				_commandsPool.push_back(new TwoColorTrianglesCommand());
 			}
 		}

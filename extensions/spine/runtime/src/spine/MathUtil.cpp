@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,14 +23,17 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-#include <spine/MathUtil.h>
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
+
 #include <math.h>
+#include <spine/MathUtil.h>
 #include <stdlib.h>
-#include <cmath>
 
 // Required for division by 0 in _isNaN on MSVC
 #ifdef _MSC_VER
@@ -41,7 +44,6 @@ using namespace spine;
 
 const float MathUtil::Pi = 3.1415926535897932385f;
 const float MathUtil::Pi_2 = 3.1415926535897932385f * 2;
-const float MathUtil::InvPi_2 = 1 / MathUtil::Pi_2;
 const float MathUtil::Deg_Rad = (3.1415926535897932385f / 180.0f);
 const float MathUtil::Rad_Deg = (180.0f / 3.1415926535897932385f);
 
@@ -66,10 +68,6 @@ float MathUtil::fmod(float a, float b) {
 /// degrees), largest error of 0.00488 radians (0.2796 degrees).
 float MathUtil::atan2(float y, float x) {
 	return (float) ::atan2(y, x);
-}
-
-float MathUtil::atan2Deg(float y, float x) {
-	return MathUtil::atan2(y, x) * MathUtil::Rad_Deg;
 }
 
 /// Returns the cosine in radians from a lookup table.
@@ -100,12 +98,14 @@ float MathUtil::cosDeg(float degrees) {
 	return (float) ::cos(degrees * MathUtil::Deg_Rad);
 }
 
-bool MathUtil::isNan(float v) {
-	return std::isnan(v);
+/* Need to pass 0 as an argument, so VC++ doesn't error with C2124 */
+static bool _isNan(float value, float zero) {
+	float _nan = (float) 0.0 / zero;
+	return 0 == memcmp((void *) &value, (void *) &_nan, sizeof(value));
 }
 
-float MathUtil::quietNan() {
-	return std::nan("");
+bool MathUtil::isNan(float v) {
+	return _isNan(v, 0);
 }
 
 float MathUtil::random() {
@@ -125,8 +125,4 @@ float MathUtil::randomTriangular(float min, float max, float mode) {
 
 float MathUtil::pow(float a, float b) {
 	return (float) ::pow(a, b);
-}
-
-float MathUtil::ceil(float v) {
-	return ::ceil(v);
 }

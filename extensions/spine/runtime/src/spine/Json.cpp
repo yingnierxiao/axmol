@@ -21,6 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
+
 /* Json */
 /* JSON parser in CPP, from json.c in the spine-c runtime */
 
@@ -34,8 +38,8 @@ THE SOFTWARE.
 #define _BSD_SOURCE
 #endif
 
-#include <spine/Json.h>
 #include <spine/Extension.h>
+#include <spine/Json.h>
 #include <spine/SpineString.h>
 
 #include <assert.h>
@@ -372,6 +376,7 @@ const char *Json::parseNumber(Json *item, const char *num) {
 	if (*ptr == 'e' || *ptr == 'E') {
 		double exponent = 0;
 		int expNegative = 0;
+		int n = 0;
 		++ptr;
 
 		if (*ptr == '-') {
@@ -384,6 +389,7 @@ const char *Json::parseNumber(Json *item, const char *num) {
 		while (*ptr >= '0' && *ptr <= '9') {
 			exponent = (exponent * 10.0) + (*ptr - '0');
 			++ptr;
+			++n;
 		}
 
 		if (expNegative) {

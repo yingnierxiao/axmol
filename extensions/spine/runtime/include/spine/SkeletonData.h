@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,8 +23,8 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
 #ifndef Spine_SkeletonData_h
@@ -49,8 +49,6 @@ namespace spine {
 	class TransformConstraintData;
 
 	class PathConstraintData;
-
-    class PhysicsConstraintData;
 
 /// Stores the setup pose and all of the stateless data for a skeleton.
 	class SP_API SkeletonData : public SpineObject {
@@ -91,9 +89,6 @@ namespace spine {
 		/// @return May be NULL.
 		PathConstraintData *findPathConstraint(const String &constraintName);
 
-        /// @return May be NULL.
-        PhysicsConstraintData *findPhysicsConstraint(const String &constraintName);
-
 		const String &getName();
 
 		void setName(const String &inValue);
@@ -123,8 +118,6 @@ namespace spine {
 
 		Vector<PathConstraintData *> &getPathConstraints();
 
-        Vector<PhysicsConstraintData *> &getPhysicsConstraints();
-
 		float getX();
 
 		void setX(float inValue);
@@ -140,10 +133,6 @@ namespace spine {
 		float getHeight();
 
 		void setHeight(float inValue);
-
-        float getReferenceScale();
-
-        void setReferenceScale(float inValue);
 
 		/// The Spine version used to export this data, or NULL.
 		const String &getVersion();
@@ -178,9 +167,7 @@ namespace spine {
 		Vector<IkConstraintData *> _ikConstraints;
 		Vector<TransformConstraintData *> _transformConstraints;
 		Vector<PathConstraintData *> _pathConstraints;
-        Vector<PhysicsConstraintData *> _physicsConstraints;
 		float _x, _y, _width, _height;
-        float _referenceScale;
 		String _version;
 		String _hash;
 		Vector<char *> _strings;

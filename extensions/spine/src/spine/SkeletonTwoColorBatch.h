@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,24 +23,26 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
 #ifndef SPINE_SKELETONTWOCOLORBATCH_H_
 #define SPINE_SKELETONTWOCOLORBATCH_H_
 
-#include "axmol.h"
+#include "cocos2d.h"
+#if COCOS2D_VERSION >= 0x00040000
+
 #include "renderer/backend/ProgramState.h"
 #include <spine/spine.h>
 #include <vector>
 
 namespace spine {
 	struct V3F_C4B_C4B_T2F {
-		axmol::Vec3 position;
-		axmol::Color4B color;
-		axmol::Color4B color2;
-		axmol::Tex2F texCoords;
+		ax::Vec3 position;
+		ax::Color4B color;
+		ax::Color4B color2;
+		ax::Tex2F texCoords;
 	};
 
 	struct TwoColorTriangles {
@@ -49,22 +51,22 @@ namespace spine {
 		int vertCount;
 		int indexCount;
 	};
-
-	class SP_API TwoColorTrianglesCommand : public axmol::CustomCommand {
+	
+	class SP_API TwoColorTrianglesCommand : public ax::CustomCommand {
 	public:
 		TwoColorTrianglesCommand();
 
 		~TwoColorTrianglesCommand();
 
-		void init(float globalOrder, axmol::Texture2D *texture, axmol::backend::ProgramState *programState, axmol::BlendFunc blendType, const TwoColorTriangles &triangles, const axmol::Mat4 &mv, uint32_t flags);
+		void init(float globalOrder, ax::Texture2D *texture, ax::backend::ProgramState *programState, ax::BlendFunc blendType, const TwoColorTriangles &triangles, const ax::Mat4 &mv, uint32_t flags);
 
-		void updateCommandPipelineDescriptor(axmol::backend::ProgramState *programState);
+		void updateCommandPipelineDescriptor(ax::backend::ProgramState *programState);
 
-		inline axmol::backend::TextureBackend *getTexture() const { return _texture; }
+		inline ax::backend::TextureBackend *getTexture() const { return _texture; }
 
-		void draw(axmol::Renderer *renderer);
+		void draw(ax::Renderer *renderer);
 
-		void updateVertexAndIndexBuffer(axmol::Renderer *renderer, V3F_C4B_C4B_T2F *vertices, int verticesSize, uint16_t *indices, int indicesSize);
+		void updateVertexAndIndexBuffer(ax::Renderer *renderer, V3F_C4B_C4B_T2F *vertices, int verticesSize, uint16_t *indices, int indicesSize);
 
 		inline uint32_t getMaterialID() const { return _materialID; }
 
@@ -78,9 +80,9 @@ namespace spine {
 
 		inline const unsigned short *getIndices() const { return _triangles.indices; }
 
-		inline axmol::BlendFunc getBlendType() const { return _blendType; }
+		inline ax::BlendFunc getBlendType() const { return _blendType; }
 
-		inline const axmol::Mat4 &getModelView() const { return _mv; }
+		inline const ax::Mat4 &getModelView() const { return _mv; }
 
 		void setForceFlush(bool forceFlush) { _forceFlush = forceFlush; }
 
@@ -92,18 +94,18 @@ namespace spine {
 
 
 		void *_prog = nullptr;
-		axmol::backend::TextureBackend *_texture = nullptr;
-		axmol::backend::ProgramState *_programState = nullptr;
-		axmol::backend::UniformLocation _locPMatrix;
-		axmol::backend::UniformLocation _locTexture;
+		ax::backend::TextureBackend *_texture = nullptr;
+		ax::backend::ProgramState *_programState = nullptr;
+		ax::backend::UniformLocation _locPMatrix;
+		ax::backend::UniformLocation _locTexture;
 
-		axmol::BlendFunc _blendType;
+		ax::BlendFunc _blendType;
 		TwoColorTriangles _triangles;
-		axmol::Mat4 _mv;
+		ax::Mat4 _mv;
 		bool _forceFlush;
 	};
 
-	class SP_API SkeletonTwoColorBatch {
+    class SP_API SkeletonTwoColorBatch {
 	public:
 		static SkeletonTwoColorBatch *getInstance();
 
@@ -117,11 +119,11 @@ namespace spine {
 		unsigned short *allocateIndices(uint32_t numIndices);
 		void deallocateIndices(uint32_t numIndices);
 
-		TwoColorTrianglesCommand *addCommand(axmol::Renderer *renderer, float globalOrder, axmol::Texture2D *texture, axmol::backend::ProgramState *programState, axmol::BlendFunc blendType, const TwoColorTriangles &triangles, const axmol::Mat4 &mv, uint32_t flags);
+		TwoColorTrianglesCommand *addCommand(ax::Renderer *renderer, float globalOrder, ax::Texture2D *texture, ax::backend::ProgramState *programState, ax::BlendFunc blendType, const TwoColorTriangles &triangles, const ax::Mat4 &mv, uint32_t flags);
 
-		void batch(axmol::Renderer *renderer, TwoColorTrianglesCommand *command);
+		void batch(ax::Renderer *renderer, TwoColorTrianglesCommand *command);
 
-		void flush(axmol::Renderer *renderer, TwoColorTrianglesCommand *materialCommand);
+		void flush(ax::Renderer *renderer, TwoColorTrianglesCommand *materialCommand);
 
 		uint32_t getNumBatches() { return _numBatches; };
 
@@ -158,5 +160,7 @@ namespace spine {
 		uint32_t _numBatches;
 	};
 }// namespace spine
+
+#endif
 
 #endif// SPINE_SKELETONTWOCOLORBATCH_H_

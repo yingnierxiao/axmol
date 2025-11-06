@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,9 +23,13 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
 
 #include <spine/Slot.h>
 
@@ -45,7 +49,7 @@ Slot::Slot(SlotData &data, Bone &bone) : _data(data),
 										 _hasDarkColor(data.hasDarkColor()),
 										 _attachment(NULL),
 										 _attachmentState(0),
-										 _sequenceIndex(0) {
+										 _attachmentTime(0) {
 	setToSetupPose();
 }
 
@@ -99,13 +103,12 @@ void Slot::setAttachment(Attachment *inValue) {
 		!_attachment ||
 		!inValue->getRTTI().instanceOf(VertexAttachment::rtti) ||
 		!_attachment->getRTTI().instanceOf(VertexAttachment::rtti) ||
-		static_cast<VertexAttachment *>(inValue)->getTimelineAttachment() !=
-				static_cast<VertexAttachment *>(_attachment)->getTimelineAttachment()) {
+		static_cast<VertexAttachment *>(inValue)->getDeformAttachment() != static_cast<VertexAttachment *>(_attachment)->getDeformAttachment()) {
 		_deform.clear();
 	}
 
 	_attachment = inValue;
-	_sequenceIndex = -1;
+	_attachmentTime = _skeleton.getTime();
 }
 
 int Slot::getAttachmentState() {
@@ -116,14 +119,14 @@ void Slot::setAttachmentState(int state) {
 	_attachmentState = state;
 }
 
+float Slot::getAttachmentTime() {
+	return _skeleton.getTime() - _attachmentTime;
+}
+
+void Slot::setAttachmentTime(float inValue) {
+	_attachmentTime = _skeleton.getTime() - inValue;
+}
+
 Vector<float> &Slot::getDeform() {
 	return _deform;
-}
-
-int Slot::getSequenceIndex() {
-	return _sequenceIndex;
-}
-
-void Slot::setSequenceIndex(int index) {
-	_sequenceIndex = index;
 }

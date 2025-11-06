@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
+ * Last updated January 1, 2020. Replaces all prior versions.
  *
- * Copyright (c) 2013-2023, Esoteric Software LLC
+ * Copyright (c) 2013-2020, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,12 +23,16 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-#include <spine/AnimationState.h>
+#ifdef SPINE_UE4
+#include "SpinePluginPrivatePCH.h"
+#endif
+
 #include <spine/Animation.h>
+#include <spine/AnimationState.h>
 #include <spine/AnimationStateData.h>
 #include <spine/AttachmentTimeline.h>
 #include <spine/Bone.h>
@@ -55,8 +59,7 @@ void dummyOnAnimationEventFunc(AnimationState *state, spine::EventType type, Tra
 
 TrackEntry::TrackEntry() : _animation(NULL), _previous(NULL), _next(NULL), _mixingFrom(NULL), _mixingTo(0),
 						   _trackIndex(0), _loop(false), _holdPrevious(false), _reverse(false),
-						   _shortestRotation(false),
-						   _eventThreshold(0), _mixAttachmentThreshold(0), _alphaAttachmentThreshold(0), _mixDrawOrderThreshold(0), _animationStart(0),
+						   _eventThreshold(0), _attachmentThreshold(0), _drawOrderThreshold(0), _animationStart(0),
 						   _animationEnd(0), _animationLast(0), _nextAnimationLast(0), _delay(0), _trackTime(0),
 						   _trackLast(0), _nextTrackLast(0), _trackEnd(0), _timeScale(1.0f), _alpha(0), _mixTime(0),
 						   _mixDuration(0), _interruptAlpha(0), _totalAlpha(0), _mixBlend(MixBlend_Replace),
@@ -82,10 +85,6 @@ void TrackEntry::setHoldPrevious(bool inValue) { _holdPrevious = inValue; }
 bool TrackEntry::getReverse() { return _reverse; }
 
 void TrackEntry::setReverse(bool inValue) { _reverse = inValue; }
-
-bool TrackEntry::getShortestRotation() { return _shortestRotation; }
-
-void TrackEntry::setShortestRotation(bool inValue) { _shortestRotation = inValue; }
 
 float TrackEntry::getDelay() { return _delay; }
 
@@ -136,17 +135,13 @@ float TrackEntry::getEventThreshold() { return _eventThreshold; }
 
 void TrackEntry::setEventThreshold(float inValue) { _eventThreshold = inValue; }
 
-float TrackEntry::getMixAttachmentThreshold() { return _mixAttachmentThreshold; }
+float TrackEntry::getAttachmentThreshold() { return _attachmentThreshold; }
 
-void TrackEntry::setMixAttachmentThreshold(float inValue) { _mixAttachmentThreshold = inValue; }
+void TrackEntry::setAttachmentThreshold(float inValue) { _attachmentThreshold = inValue; }
 
-float TrackEntry::getAlphaAttachmentThreshold() { return _alphaAttachmentThreshold; }
+float TrackEntry::getDrawOrderThreshold() { return _drawOrderThreshold; }
 
-void TrackEntry::setAlphaAttachmentThreshold(float inValue) { _alphaAttachmentThreshold = inValue; }
-
-float TrackEntry::getMixDrawOrderThreshold() { return _mixDrawOrderThreshold; }
-
-void TrackEntry::setMixDrawOrderThreshold(float inValue) { _mixDrawOrderThreshold = inValue; }
+void TrackEntry::setDrawOrderThreshold(float inValue) { _drawOrderThreshold = inValue; }
 
 TrackEntry *TrackEntry::getNext() { return _next; }
 
@@ -161,12 +156,6 @@ void TrackEntry::setMixTime(float inValue) { _mixTime = inValue; }
 float TrackEntry::getMixDuration() { return _mixDuration; }
 
 void TrackEntry::setMixDuration(float inValue) { _mixDuration = inValue; }
-
-void TrackEntry::setMixDuration(float mixDuration, float delay) {
-	_mixDuration = mixDuration;
-	if (_previous && delay <= 0) delay += _previous->getTrackComplete() - mixDuration;
-	this->_delay = delay;
-}
 
 TrackEntry *TrackEntry::getMixingFrom() { return _mixingFrom; }
 
@@ -216,25 +205,22 @@ float TrackEntry::getTrackComplete() {
 	return _trackTime;// Next update.
 }
 
-bool TrackEntry::wasApplied() {
-	return _nextTrackLast != -1;
-}
-
 EventQueueEntry::EventQueueEntry(EventType eventType, TrackEntry *trackEntry, Event *event) : _type(eventType),
 																							  _entry(trackEntry),
 																							  _event(event) {
 }
 
-EventQueue *EventQueue::newEventQueue(AnimationState &state) {
-	return new (__FILE__, __LINE__) EventQueue(state);
+EventQueue *EventQueue::newEventQueue(AnimationState &state, Pool<TrackEntry> &trackEntryPool) {
+	return new (__FILE__, __LINE__) EventQueue(state, trackEntryPool);
 }
 
 EventQueueEntry EventQueue::newEventQueueEntry(EventType eventType, TrackEntry *entry, Event *event) {
 	return EventQueueEntry(eventType, entry, event);
 }
 
-EventQueue::EventQueue(AnimationState &state) : _state(state),
-												_drainDisabled(false) {
+EventQueue::EventQueue(AnimationState &state, Pool<TrackEntry> &trackEntryPool) : _state(state),
+																				  _trackEntryPool(trackEntryPool),
+																				  _drainDisabled(false) {
 }
 
 EventQueue::~EventQueue() {
@@ -308,7 +294,8 @@ void EventQueue::drain() {
 				else
 					state._listenerObject->callback(&state, EventType_Dispose, trackEntry, NULL);
 
-				if (!_state.getManualTrackEntryDisposal()) _state.disposeTrackEntry(trackEntry);
+				trackEntry->reset();
+				_trackEntryPool.free(trackEntry);
 				break;
 			case EventType_Event:
 				if (!trackEntry->_listenerObject)
@@ -327,13 +314,12 @@ void EventQueue::drain() {
 }
 
 AnimationState::AnimationState(AnimationStateData *data) : _data(data),
-														   _queue(EventQueue::newEventQueue(*this)),
+														   _queue(EventQueue::newEventQueue(*this, _trackEntryPool)),
 														   _animationsChanged(false),
 														   _listener(dummyOnAnimationEventFunc),
 														   _listenerObject(NULL),
 														   _unkeyedState(0),
-														   _timeScale(1),
-														   _manualTrackEntryDisposal(false) {
+														   _timeScale(1) {
 }
 
 AnimationState::~AnimationState() {
@@ -442,14 +428,12 @@ bool AnimationState::apply(Skeleton &skeleton) {
 		MixBlend blend = i == 0 ? MixBlend_First : current._mixBlend;
 
 		// apply mixing from entries first.
-		float alpha = current._alpha;
+		float mix = current._alpha;
 		if (current._mixingFrom != NULL) {
-			alpha *= applyMixingFrom(currentP, skeleton, blend);
+			mix *= applyMixingFrom(currentP, skeleton, blend);
 		} else if (current._trackTime >= current._trackEnd && current._next == NULL) {
-			alpha = 0;// Set to setup pose the last time the entry will be applied.
+			mix = 0;// Set to setup pose the last time the entry will be applied.
 		}
-		bool attachments = alpha >= current._alphaAttachmentThreshold;
-
 
 		// apply current entry.
 		float animationLast = current._animationLast, animationTime = current.getAnimationTime();
@@ -461,21 +445,19 @@ bool AnimationState::apply(Skeleton &skeleton) {
 		}
 		size_t timelineCount = current._animation->_timelines.size();
 		Vector<Timeline *> &timelines = current._animation->_timelines;
-		if ((i == 0 && alpha == 1) || blend == MixBlend_Add) {
-			if (i == 0) attachments = true;
+		if ((i == 0 && mix == 1) || blend == MixBlend_Add) {
 			for (size_t ii = 0; ii < timelineCount; ++ii) {
 				Timeline *timeline = timelines[ii];
 				if (timeline->getRTTI().isExactly(AttachmentTimeline::rtti))
 					applyAttachmentTimeline(static_cast<AttachmentTimeline *>(timeline), skeleton, applyTime, blend,
-											attachments);
+											true);
 				else
-					timeline->apply(skeleton, animationLast, applyTime, applyEvents, alpha, blend, MixDirection_In);
+					timeline->apply(skeleton, animationLast, applyTime, applyEvents, mix, blend, MixDirection_In);
 			}
 		} else {
 			Vector<int> &timelineMode = current._timelineMode;
 
-			bool shortestRotation = current._shortestRotation;
-			bool firstFrame = !shortestRotation && current._timelinesRotation.size() != timelines.size() << 1;
+			bool firstFrame = current._timelinesRotation.size() != timelines.size() << 1;
 			if (firstFrame) current._timelinesRotation.setSize(timelines.size() << 1, 0);
 			Vector<float> &timelinesRotation = current._timelinesRotation;
 
@@ -485,14 +467,14 @@ bool AnimationState::apply(Skeleton &skeleton) {
 
 				MixBlend timelineBlend = timelineMode[ii] == Subsequent ? blend : MixBlend_Setup;
 
-				if (!shortestRotation && timeline->getRTTI().isExactly(RotateTimeline::rtti))
-					applyRotateTimeline(static_cast<RotateTimeline *>(timeline), skeleton, applyTime, alpha,
+				if (timeline->getRTTI().isExactly(RotateTimeline::rtti))
+					applyRotateTimeline(static_cast<RotateTimeline *>(timeline), skeleton, applyTime, mix,
 										timelineBlend, timelinesRotation, ii << 1, firstFrame);
 				else if (timeline->getRTTI().isExactly(AttachmentTimeline::rtti))
 					applyAttachmentTimeline(static_cast<AttachmentTimeline *>(timeline), skeleton, applyTime,
-											blend, attachments);
+											timelineBlend, true);
 				else
-					timeline->apply(skeleton, animationLast, applyTime, applyEvents, alpha, timelineBlend,
+					timeline->apply(skeleton, animationLast, applyTime, applyEvents, mix, timelineBlend,
 									MixDirection_In);
 			}
 		}
@@ -505,7 +487,7 @@ bool AnimationState::apply(Skeleton &skeleton) {
 
 	int setupState = _unkeyedState + Setup;
 	Vector<Slot *> &slots = skeleton.getSlots();
-	for (int i = 0, n = (int) slots.size(); i < n; i++) {
+	for (int i = 0, n = slots.size(); i < n; i++) {
 		Slot *slot = slots[i];
 		if (slot->getAttachmentState() == setupState) {
 			const String &attachmentName = slot->getData().getAttachmentName();
@@ -682,19 +664,6 @@ void AnimationState::enableQueue() {
 	_queue->_drainDisabled = false;
 }
 
-void AnimationState::setManualTrackEntryDisposal(bool inValue) {
-	_manualTrackEntryDisposal = inValue;
-}
-
-bool AnimationState::getManualTrackEntryDisposal() {
-	return _manualTrackEntryDisposal;
-}
-
-void AnimationState::disposeTrackEntry(TrackEntry *entry) {
-	entry->reset();
-	_trackEntryPool.free(entry);
-}
-
 Animation *AnimationState::getEmptyAnimation() {
 	static Vector<Timeline *> timelines;
 	static Animation ret(String("<empty>"), timelines, 0);
@@ -750,7 +719,7 @@ void AnimationState::applyRotateTimeline(RotateTimeline *rotateTimeline, Skeleto
 
 	// Mix between rotations using the direction of the shortest route on the first frame while detecting crosses.
 	float total, diff = r2 - r1;
-	diff -= MathUtil::ceil(diff / 360 - 0.5) * 360;
+	diff -= (16384 - (int) (16384.499999999996 - diff / 360)) * 360;
 	if (diff == 0) {
 		total = timelinesRotation[i];
 	} else {
@@ -759,21 +728,19 @@ void AnimationState::applyRotateTimeline(RotateTimeline *rotateTimeline, Skeleto
 			lastTotal = 0;
 			lastDiff = diff;
 		} else {
-			lastTotal = timelinesRotation[i];
-			lastDiff = timelinesRotation[i + 1];
+			lastTotal = timelinesRotation[i];   // Angle and direction of mix, including loops.
+			lastDiff = timelinesRotation[i + 1];// Difference between bones.
 		}
-		float loops = lastTotal - MathUtil::fmod(lastTotal, 360.f);
-		total = diff + loops;
-		bool current = diff >= 0, dir = lastTotal >= 0;
-		if (MathUtil::abs(lastDiff) <= 90 && MathUtil::sign(lastDiff) != MathUtil::sign(diff)) {
-			if (MathUtil::abs(lastTotal - loops) > 180) {
-				total += 360.f * MathUtil::sign(lastTotal);
-				dir = current;
-			} else if (loops != 0)
-				total -= 360.f * MathUtil::sign(lastTotal);
-			else
-				dir = current;
+
+		bool current = diff > 0, dir = lastTotal >= 0;
+		// Detect cross at 0 (not 180).
+		if (MathUtil::sign(lastDiff) != MathUtil::sign(diff) && MathUtil::abs(lastDiff) <= 90) {
+			// A cross after a 360 rotation is a loop.
+			if (MathUtil::abs(lastTotal) > 180) lastTotal += 360 * MathUtil::sign(lastTotal);
+			dir = current;
 		}
+
+		total = diff + lastTotal - MathUtil::fmod(lastTotal, 360);// Store loops as part of lastTotal.
 		if (dir != current) {
 			total += 360 * MathUtil::sign(lastTotal);
 		}
@@ -794,18 +761,16 @@ bool AnimationState::updateMixingFrom(TrackEntry *to, float delta) {
 	from->_animationLast = from->_nextAnimationLast;
 	from->_trackLast = from->_nextTrackLast;
 
-	if (to->_nextTrackLast != -1) {                             // The from entry was applied at least once.
-		bool discard = to->_mixTime == 0 && from->_mixTime == 0;// Discard the from entry when neither have advanced yet.
-		if (to->_mixTime >= to->_mixDuration || discard) {
-			// Require totalAlpha == 0 to ensure mixing is complete or the transition is a single frame or discarded.
-			if (from->_totalAlpha == 0 || to->_mixDuration == 0 || discard) {
-				to->_mixingFrom = from->_mixingFrom;
-				if (from->_mixingFrom) from->_mixingFrom->_mixingTo = to;
-				to->_interruptAlpha = from->_interruptAlpha;
-				_queue->end(from);
-			}
-			return finished;
+	// Require mixTime > 0 to ensure the mixing from entry was applied at least once.
+	if (to->_mixTime > 0 && to->_mixTime >= to->_mixDuration) {
+		// Require totalAlpha == 0 to ensure mixing is complete, unless mixDuration == 0 (the transition is a single frame).
+		if (from->_totalAlpha == 0 || to->_mixDuration == 0) {
+			to->_mixingFrom = from->_mixingFrom;
+			if (from->_mixingFrom != NULL) from->_mixingFrom->_mixingTo = to;
+			to->_interruptAlpha = from->_interruptAlpha;
+			_queue->end(from);
 		}
+		return finished;
 	}
 
 	from->_trackTime += delta * from->_timeScale;
@@ -831,7 +796,7 @@ float AnimationState::applyMixingFrom(TrackEntry *to, Skeleton &skeleton, MixBle
 		if (blend != MixBlend_First) blend = from->_mixBlend;
 	}
 
-	bool attachments = mix < from->_mixAttachmentThreshold, drawOrder = mix < from->_mixDrawOrderThreshold;
+	bool attachments = mix < from->_attachmentThreshold, drawOrder = mix < from->_drawOrderThreshold;
 	Vector<Timeline *> &timelines = from->_animation->_timelines;
 	size_t timelineCount = timelines.size();
 	float alphaHold = from->_alpha * to->_interruptAlpha, alphaMix = alphaHold * (1 - mix);
@@ -851,8 +816,7 @@ float AnimationState::applyMixingFrom(TrackEntry *to, Skeleton &skeleton, MixBle
 		Vector<int> &timelineMode = from->_timelineMode;
 		Vector<TrackEntry *> &timelineHoldMix = from->_timelineHoldMix;
 
-		bool shortestRotation = from->_shortestRotation;
-		bool firstFrame = !shortestRotation && from->_timelinesRotation.size() != timelines.size() << 1;
+		bool firstFrame = from->_timelinesRotation.size() != timelines.size() << 1;
 		if (firstFrame) from->_timelinesRotation.setSize(timelines.size() << 1, 0);
 
 		Vector<float> &timelinesRotation = from->_timelinesRotation;
@@ -888,12 +852,12 @@ float AnimationState::applyMixingFrom(TrackEntry *to, Skeleton &skeleton, MixBle
 					break;
 			}
 			from->_totalAlpha += alpha;
-			if (!shortestRotation && (timeline->getRTTI().isExactly(RotateTimeline::rtti))) {
+			if ((timeline->getRTTI().isExactly(RotateTimeline::rtti))) {
 				applyRotateTimeline((RotateTimeline *) timeline, skeleton, applyTime, alpha, timelineBlend,
 									timelinesRotation, i << 1, firstFrame);
 			} else if (timeline->getRTTI().isExactly(AttachmentTimeline::rtti)) {
 				applyAttachmentTimeline(static_cast<AttachmentTimeline *>(timeline), skeleton, applyTime, timelineBlend,
-										attachments && alpha >= from->_alphaAttachmentThreshold);
+										attachments);
 			} else {
 				if (drawOrder && timeline->getRTTI().isExactly(DrawOrderTimeline::rtti) &&
 					timelineBlend == MixBlend_Setup)
@@ -923,7 +887,7 @@ void AnimationState::setAttachment(Skeleton &skeleton, Slot &slot, const String 
 void AnimationState::queueEvents(TrackEntry *entry, float animationTime) {
 	float animationStart = entry->_animationStart, animationEnd = entry->_animationEnd;
 	float duration = animationEnd - animationStart;
-	float trackLastWrapped = duration != 0 ? MathUtil::fmod(entry->_trackLast, duration) : MathUtil::quietNan();
+	float trackLastWrapped = MathUtil::fmod(entry->_trackLast, duration);
 
 	// Queue events before complete.
 	size_t i = 0, n = _events.size();
@@ -936,16 +900,10 @@ void AnimationState::queueEvents(TrackEntry *entry, float animationTime) {
 
 	// Queue complete if completed a loop iteration or the animation.
 	bool complete = false;
-	if (entry->_loop) {
-		if (duration == 0)
-			complete = true;
-		else {
-			int cycles = (int) (entry->_trackTime / duration);
-			complete = cycles > 0 && cycles > (int) (entry->_trackLast / duration);
-		}
-	} else {
+	if (entry->_loop)
+		complete = duration == 0 || (trackLastWrapped > MathUtil::fmod(entry->_trackTime, duration));
+	else
 		complete = animationTime >= animationEnd && entry->_animationLast < animationEnd;
-	}
 	if (complete) _queue->complete(entry);
 
 	// Queue events after complete.
@@ -990,18 +948,14 @@ TrackEntry *AnimationState::newTrackEntry(size_t trackIndex, Animation *animatio
 	TrackEntry *entryP = _trackEntryPool.obtain();// Pooling
 	TrackEntry &entry = *entryP;
 
-	entry._trackIndex = (int) trackIndex;
+	entry._trackIndex = trackIndex;
 	entry._animation = animation;
 	entry._loop = loop;
 	entry._holdPrevious = 0;
 
-	entry._reverse = false;
-	entry._shortestRotation = false;
-
 	entry._eventThreshold = 0;
-	entry._alphaAttachmentThreshold = 0;
-	entry._mixAttachmentThreshold = 0;
-	entry._mixDrawOrderThreshold = 0;
+	entry._attachmentThreshold = 0;
+	entry._drawOrderThreshold = 0;
 
 	entry._animationStart = 0;
 	entry._animationEnd = animation->getDuration();
@@ -1016,10 +970,9 @@ TrackEntry *AnimationState::newTrackEntry(size_t trackIndex, Animation *animatio
 	entry._timeScale = 1;
 
 	entry._alpha = 1;
+	entry._interruptAlpha = 1;
 	entry._mixTime = 0;
 	entry._mixDuration = (last == NULL) ? 0 : _data->getMix(last->_animation, animation);
-	entry._interruptAlpha = 1;
-	entry._totalAlpha = 0;
 	entry._mixBlend = MixBlend_Replace;
 
 	return entryP;

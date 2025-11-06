@@ -27,49 +27,94 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-#ifdef SPINE_UE4
-#include "SpinePluginPrivatePCH.h"
-#endif
+#ifndef Spine_VertexEffect_h
+#define Spine_VertexEffect_h
 
-#include <spine/PathAttachment.h>
+#include <spine/SpineObject.h>
+#include <spine/MathUtil.h>
 
-using namespace spine;
+namespace spine {
 
-RTTI_IMPL(PathAttachment, VertexAttachment)
+	class Skeleton;
 
-PathAttachment::PathAttachment(const String &name) : VertexAttachment(name), _closed(false), _constantSpeed(false),
-													 _color() {
+	class Color;
+
+	class SP_API VertexEffect : public SpineObject {
+	public:
+		virtual void begin(Skeleton &skeleton) = 0;
+
+		virtual void transform(float &x, float &y, float &u, float &v, Color &light, Color &dark) = 0;
+
+		virtual void end() = 0;
+	};
+
+	class SP_API JitterVertexEffect : public VertexEffect {
+	public:
+		JitterVertexEffect(float jitterX, float jitterY);
+
+		void begin(Skeleton &skeleton);
+
+		void transform(float &x, float &y, float &u, float &v, Color &light, Color &dark);
+
+		void end();
+
+		void setJitterX(float jitterX);
+
+		float getJitterX();
+
+		void setJitterY(float jitterY);
+
+		float getJitterY();
+
+	protected:
+		float _jitterX;
+		float _jitterY;
+	};
+
+	class SP_API SwirlVertexEffect : public VertexEffect {
+	public:
+		SwirlVertexEffect(float radius, Interpolation &interpolation);
+
+		void begin(Skeleton &skeleton);
+
+		void transform(float &x, float &y, float &u, float &v, Color &light, Color &dark);
+
+		void end();
+
+		void setCenterX(float centerX);
+
+		float getCenterX();
+
+		void setCenterY(float centerY);
+
+		float getCenterY();
+
+		void setRadius(float radius);
+
+		float getRadius();
+
+		void setAngle(float angle);
+
+		float getAngle();
+
+		void setWorldX(float worldX);
+
+		float getWorldX();
+
+		void setWorldY(float worldY);
+
+		float getWorldY();
+
+	protected:
+		float _centerX;
+		float _centerY;
+		float _radius;
+		float _angle;
+		float _worldX;
+		float _worldY;
+
+		Interpolation &_interpolation;
+	};
 }
 
-Vector<float> &PathAttachment::getLengths() {
-	return _lengths;
-}
-
-bool PathAttachment::isClosed() {
-	return _closed;
-}
-
-void PathAttachment::setClosed(bool inValue) {
-	_closed = inValue;
-}
-
-bool PathAttachment::isConstantSpeed() {
-	return _constantSpeed;
-}
-
-void PathAttachment::setConstantSpeed(bool inValue) {
-	_constantSpeed = inValue;
-}
-
-Color &PathAttachment::getColor() {
-	return _color;
-}
-
-Attachment *PathAttachment::copy() {
-	PathAttachment *copy = new (__FILE__, __LINE__) PathAttachment(getName());
-	copyTo(copy);
-	copy->_lengths.clearAndAddAll(_lengths);
-	copy->_closed = _closed;
-	copy->_constantSpeed = _constantSpeed;
-	return copy;
-}
+#endif /* Spine_VertexEffect_h */
