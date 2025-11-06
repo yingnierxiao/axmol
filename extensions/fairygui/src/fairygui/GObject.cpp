@@ -824,6 +824,9 @@ void GObject::setup_beforeAdd(ByteBuffer* buffer, int beginPos)
 
     id = buffer->readS();
     name = buffer->readS();
+    // 同步 name 到底层 Node,方便调试器显示
+    if (_displayObject != nullptr)
+        _displayObject->setName(name);
     float f1 = buffer->readInt();
     float f2 = buffer->readInt();
     setPosition(f1, f2);

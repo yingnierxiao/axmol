@@ -249,17 +249,24 @@ std::string Inspector::getNodeTypeName(Node* node)
 
 void Inspector::drawTreeRecursive(Node* node, int index)
 {
-    std::string str = fmt::format("[{}] {}", index, getNodeTypeName(node));
+    // 优先显示节点名称,如果没有名称则显示类型名
+    const auto nodeName = node->getName();
+    std::string str;
+
+    if (!nodeName.empty())
+    {
+        // 有名称: [索引] "名称" (类型)
+        str = fmt::format("[{}] \"{}\" ({})", index, nodeName, getNodeTypeName(node));
+    }
+    else
+    {
+        // 无名称: [索引] 类型
+        str = fmt::format("[{}] {}", index, getNodeTypeName(node));
+    }
 
     if (node->getTag() != -1)
     {
-        fmt::format_to(std::back_inserter(str), " ({})", node->getTag());
-    }
-
-    const auto nodeName = node->getName();
-    if (!nodeName.empty())
-    {
-        fmt::format_to(std::back_inserter(str), " \"{}\"", nodeName);
+        fmt::format_to(std::back_inserter(str), " <tag:{}>", node->getTag());
     }
 
     const auto childrenCount = node->getChildrenCount();
