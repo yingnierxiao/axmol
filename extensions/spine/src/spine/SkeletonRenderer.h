@@ -30,7 +30,7 @@
 #ifndef SPINE_SKELETONRENDERER_H_
 #define SPINE_SKELETONRENDERER_H_
 
-#include "cocos2d.h"
+#include "axmol.h"
 #include <spine/spine.h>
 
 namespace spine {
@@ -38,7 +38,7 @@ namespace spine {
 	class AttachmentVertices;
 
 	/* Draws a skeleton. */
-	class SP_API SkeletonRenderer: public ax::Node, public ax::BlendProtocol {
+	class SP_API SkeletonRenderer : public axmol::Node, public axmol::BlendProtocol {
 	public:
 		CREATE_FUNC(SkeletonRenderer);
 		static SkeletonRenderer *createWithSkeleton(Skeleton *skeleton, bool ownsSkeleton = false, bool ownsSkeletonData = false);
@@ -47,8 +47,8 @@ namespace spine {
 		static SkeletonRenderer *createWithFile(const std::string &skeletonDataFile, const std::string &atlasFile, float scale = 1);
 
 		void update(float deltaTime) override;
-		void draw(ax::Renderer *renderer, const ax::Mat4 &transform, uint32_t transformFlags) override;
-		ax::Rect getBoundingBox() const override;
+		void draw(axmol::Renderer *renderer, const axmol::Mat4 &transform, uint32_t transformFlags) override;
+		axmol::Rect getBoundingBox() const override;
 		void onEnter() override;
 		void onExit() override;
 
@@ -109,12 +109,12 @@ namespace spine {
 		void setSlotsRange(int startSlotIndex, int endSlotIndex);
 
 		// --- BlendProtocol
-		void setBlendFunc(const ax::BlendFunc &blendFunc) override;
-		const ax::BlendFunc &getBlendFunc() const override;
+		void setBlendFunc(const axmol::BlendFunc &blendFunc) override;
+		const axmol::BlendFunc &getBlendFunc() const override;
 		void setOpacityModifyRGB(bool value) override;
 		bool isOpacityModifyRGB() const override;
 
-		CC_CONSTRUCTOR_ACCESS : SkeletonRenderer();
+		SkeletonRenderer();
 		SkeletonRenderer(Skeleton *skeleton, bool ownsSkeleton = false, bool ownsSkeletonData = false, bool ownsAtlas = false);
 		SkeletonRenderer(SkeletonData *skeletonData, bool ownsSkeletonData = false);
 		SkeletonRenderer(const std::string &skeletonDataFile, Atlas *atlas, float scale = 1);
@@ -134,15 +134,15 @@ namespace spine {
 	protected:
 		void setSkeletonData(SkeletonData *skeletonData, bool ownsSkeletonData);
 		void setupGLProgramState(bool twoColorTintEnabled);
-		virtual void drawDebug(ax::Renderer *renderer, const ax::Mat4 &transform, uint32_t transformFlags);
+		virtual void drawDebug(axmol::Renderer *renderer, const axmol::Mat4 &transform, uint32_t transformFlags);
 
 		bool _ownsSkeletonData;
 		bool _ownsSkeleton;
 		bool _ownsAtlas = false;
 		Atlas *_atlas;
 		AttachmentLoader *_attachmentLoader;
-		ax::CustomCommand _debugCommand;
-		ax::BlendFunc _blendFunc;
+		axmol::CustomCommand _debugCommand;
+		axmol::BlendFunc _blendFunc;
 		bool _premultipliedAlpha;
 		Skeleton *_skeleton;
 		float _timeScale;
@@ -152,7 +152,7 @@ namespace spine {
 		bool _debugBoundingRect;
 		SkeletonClipping *_clipper;
 		VertexEffect *_effect;
-		ax::Rect _boundingRect;
+		axmol::Rect _boundingRect;
 
 		int _startSlotIndex;
 		int _endSlotIndex;

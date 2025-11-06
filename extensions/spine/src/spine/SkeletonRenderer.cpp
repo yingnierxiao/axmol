@@ -1,16 +1,16 @@
 /******************************************************************************
  * Spine Runtimes License Agreement
- * Last updated January 1, 2020. Replaces all prior versions.
+ * Last updated July 28, 2023. Replaces all prior versions.
  *
- * Copyright (c) 2013-2020, Esoteric Software LLC
+ * Copyright (c) 2013-2023, Esoteric Software LLC
  *
  * Integration of the Spine Runtimes into software or otherwise creating
  * derivative works of the Spine Runtimes is permitted under the terms and
  * conditions of Section 2 of the Spine Editor License Agreement:
  * http://esotericsoftware.com/spine-editor-license
  *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software or
+ * otherwise create derivative works of the Spine Runtimes (collectively,
  * "Products"), provided that each user of the Products must obtain their own
  * Spine Editor license and redistribution of the Products in any form must
  * include this license and copyright notice.
@@ -23,16 +23,16 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
  * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
+ * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
 #include <algorithm>
 #include <spine/AttachmentVertices.h>
 #include <spine/Extension.h>
-#include <spine/spine-cocos2dx.h>
+#include <spine/spine-axmol.h>
 
-USING_NS_CC;
+using namespace ax;
 
 namespace spine {
 
@@ -40,11 +40,11 @@ namespace spine {
 		AxmolTextureLoader textureLoader;
 
 		int computeTotalCoordCount(Skeleton &skeleton, int startSlotIndex, int endSlotIndex);
-		ax::Rect computeBoundingRect(const float *coords, int vertexCount);
+		axmol::Rect computeBoundingRect(const float *coords, int vertexCount);
 		void interleaveCoordinates(float *dst, const float *src, int vertexCount, int dstStride);
 		BlendFunc makeBlendFunc(BlendMode blendMode, bool premultipliedAlpha);
 		void transformWorldVertices(float *dstCoord, int coordCount, Skeleton &skeleton, int startSlotIndex, int endSlotIndex);
-		bool cullRectangle(Renderer *renderer, const Mat4 &transform, const ax::Rect &rect);
+		bool cullRectangle(Renderer *renderer, const Mat4 &transform, const axmol::Rect &rect);
 		Color4B ColorToColor4B(const Color &color);
 		bool slotIsOutRange(Slot &slot, int startSlotIndex, int endSlotIndex);
 		bool nothingToDraw(Slot &slot, int startSlotIndex, int endSlotIndex);
@@ -107,26 +107,26 @@ namespace spine {
 	}
 
 	SkeletonRenderer::SkeletonRenderer()
-		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _effect(nullptr), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()) {
+		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()), _effect(nullptr) {
 	}
 
 	SkeletonRenderer::SkeletonRenderer(Skeleton *skeleton, bool ownsSkeleton, bool ownsSkeletonData, bool ownsAtlas)
-		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _effect(nullptr), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()) {
+		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()), _effect(nullptr) {
 		initWithSkeleton(skeleton, ownsSkeleton, ownsSkeletonData, ownsAtlas);
 	}
 
 	SkeletonRenderer::SkeletonRenderer(SkeletonData *skeletonData, bool ownsSkeletonData)
-		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _effect(nullptr), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()) {
+		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()), _effect(nullptr) {
 		initWithData(skeletonData, ownsSkeletonData);
 	}
 
 	SkeletonRenderer::SkeletonRenderer(const std::string &skeletonDataFile, Atlas *atlas, float scale)
-		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _effect(nullptr), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()) {
+		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()), _effect(nullptr) {
 		initWithJsonFile(skeletonDataFile, atlas, scale);
 	}
 
 	SkeletonRenderer::SkeletonRenderer(const std::string &skeletonDataFile, const std::string &atlasFile, float scale)
-		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _effect(nullptr), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()) {
+		: _atlas(nullptr), _attachmentLoader(nullptr), _timeScale(1), _debugSlots(false), _debugBones(false), _debugMeshes(false), _debugBoundingRect(false), _startSlotIndex(0), _endSlotIndex(std::numeric_limits<int>::max()), _effect(nullptr) {
 		initWithJsonFile(skeletonDataFile, atlasFile, scale);
 	}
 
@@ -159,7 +159,7 @@ namespace spine {
 		SkeletonJson json(_attachmentLoader);
 		json.setScale(scale);
 		SkeletonData *skeletonData = json.readSkeletonDataFile(skeletonDataFile.c_str());
-		CCASSERT(skeletonData, (!json.getError().isEmpty() ? json.getError().buffer() : "Error reading skeleton data."));
+		AXASSERT(skeletonData, (!json.getError().isEmpty() ? json.getError().buffer() : "Error reading skeleton data."));
 
 		_ownsSkeleton = true;
 		setSkeletonData(skeletonData, true);
@@ -169,14 +169,14 @@ namespace spine {
 
 	void SkeletonRenderer::initWithJsonFile(const std::string &skeletonDataFile, const std::string &atlasFile, float scale) {
 		_atlas = new (__FILE__, __LINE__) Atlas(atlasFile.c_str(), &textureLoader, true);
-		CCASSERT(_atlas, "Error reading atlas file.");
+		AXASSERT(_atlas, "Error reading atlas file.");
 
 		_attachmentLoader = new (__FILE__, __LINE__) AxmolAtlasAttachmentLoader(_atlas);
 
 		SkeletonJson json(_attachmentLoader);
 		json.setScale(scale);
 		SkeletonData *skeletonData = json.readSkeletonDataFile(skeletonDataFile.c_str());
-		CCASSERT(skeletonData, (!json.getError().isEmpty() ? json.getError().buffer() : "Error reading skeleton data."));
+		AXASSERT(skeletonData, (!json.getError().isEmpty() ? json.getError().buffer() : "Error reading skeleton data."));
 
 		_ownsSkeleton = true;
 		_ownsAtlas = true;
@@ -192,7 +192,7 @@ namespace spine {
 		SkeletonBinary binary(_attachmentLoader);
 		binary.setScale(scale);
 		SkeletonData *skeletonData = binary.readSkeletonDataFile(skeletonDataFile.c_str());
-		CCASSERT(skeletonData, (!binary.getError().isEmpty() ? binary.getError().buffer() : "Error reading skeleton data."));
+		AXASSERT(skeletonData, (!binary.getError().isEmpty() ? binary.getError().buffer() : "Error reading skeleton data."));
 		_ownsSkeleton = true;
 		setSkeletonData(skeletonData, true);
 
@@ -201,14 +201,14 @@ namespace spine {
 
 	void SkeletonRenderer::initWithBinaryFile(const std::string &skeletonDataFile, const std::string &atlasFile, float scale) {
 		_atlas = new (__FILE__, __LINE__) Atlas(atlasFile.c_str(), &textureLoader, true);
-		CCASSERT(_atlas, "Error reading atlas file.");
+		AXASSERT(_atlas, "Error reading atlas file.");
 
 		_attachmentLoader = new (__FILE__, __LINE__) AxmolAtlasAttachmentLoader(_atlas);
 
 		SkeletonBinary binary(_attachmentLoader);
 		binary.setScale(scale);
 		SkeletonData *skeletonData = binary.readSkeletonDataFile(skeletonDataFile.c_str());
-		CCASSERT(skeletonData, (!binary.getError().isEmpty() ? binary.getError().buffer() : "Error reading skeleton data."));
+		AXASSERT(skeletonData, (!binary.getError().isEmpty() ? binary.getError().buffer() : "Error reading skeleton data."));
 		_ownsSkeleton = true;
 		_ownsAtlas = true;
 		setSkeletonData(skeletonData, true);
@@ -237,8 +237,8 @@ namespace spine {
 		VLA(float, worldCoords, coordCount);
 		transformWorldVertices(worldCoords, coordCount, *_skeleton, _startSlotIndex, _endSlotIndex);
 
-#if CC_USE_CULLING
-		const ax::Rect bb = computeBoundingRect(worldCoords, coordCount / 2);
+#if AX_USE_CULLING
+		const axmol::Rect bb = computeBoundingRect(worldCoords, coordCount / 2);
 
 		if (cullRectangle(renderer, transform, bb)) {
 			VLA_FREE(worldCoords);
@@ -267,16 +267,15 @@ namespace spine {
 		const float darkPremultipliedAlpha = _premultipliedAlpha ? 1.f : 0;
 		AttachmentVertices *attachmentVertices = nullptr;
 		TwoColorTrianglesCommand *lastTwoColorTrianglesCommand = nullptr;
-		for (int i = 0, n = _skeleton->getSlots().size(); i < n; ++i) {
+		for (int i = 0, n = (int)_skeleton->getSlots().size(); i < n; ++i) {
 			Slot *slot = _skeleton->getDrawOrder()[i];
-			;
 
 			if (nothingToDraw(*slot, _startSlotIndex, _endSlotIndex)) {
 				_clipper->clipEnd(*slot);
 				continue;
 			}
 
-			ax::TrianglesCommand::Triangles triangles;
+			axmol::TrianglesCommand::Triangles triangles;
 			TwoColorTriangles trianglesTwoColor;
 
 			if (slot->getAttachment()->getRTTI().isExactly(RegionAttachment::rtti)) {
@@ -378,8 +377,8 @@ namespace spine {
 				color.b *= color.a;
 			}
 
-			const ax::Color4B color4B = ColorToColor4B(color);
-			const ax::Color4B darkColor4B = ColorToColor4B(darkColor);
+			const axmol::Color4B color4B = ColorToColor4B(color);
+			const axmol::Color4B darkColor4B = ColorToColor4B(darkColor);
 			const BlendFunc blendFunc = makeBlendFunc(slot->getData().getBlendMode(), attachmentVertices->_texture->hasPremultipliedAlpha());
 			_blendFunc = blendFunc;
 
@@ -424,11 +423,8 @@ namespace spine {
 						}
 					}
 
-#if COCOS2D_VERSION < 0x00040000
-					batch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _glProgramState, blendFunc, triangles, transform, transformFlags);
-#else
 					batch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _programState, blendFunc, triangles, transform, transformFlags);
-#endif
+
 				} else {
 					// Not clipping.
 					if (_effect) {
@@ -446,11 +442,8 @@ namespace spine {
 						}
 					}
 
-#if COCOS2D_VERSION < 0x00040000
-					batch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _glProgramState, blendFunc, triangles, transform, transformFlags);
-#else
+
 					batch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _programState, blendFunc, triangles, transform, transformFlags);
-#endif
 				}
 			} else {
 				// Two color tinting.
@@ -497,11 +490,8 @@ namespace spine {
 							vertex->color2 = darkColor4B;
 						}
 					}
-#if COCOS2D_VERSION < 0x00040000
-					lastTwoColorTrianglesCommand = twoColorBatch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture->getName(), _glProgramState, blendFunc, trianglesTwoColor, transform, transformFlags);
-#else
+
 					lastTwoColorTrianglesCommand = twoColorBatch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _programState, blendFunc, trianglesTwoColor, transform, transformFlags);
-#endif
 				} else {
 
 					if (_effect) {
@@ -520,11 +510,8 @@ namespace spine {
 							vertex->color2 = darkColor4B;
 						}
 					}
-#if COCOS2D_VERSION < 0x00040000
-					lastTwoColorTrianglesCommand = twoColorBatch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture->getName(), _glProgramState, blendFunc, trianglesTwoColor, transform, transformFlags);
-#else
+
 					lastTwoColorTrianglesCommand = twoColorBatch->addCommand(renderer, _globalZOrder, attachmentVertices->_texture, _programState, blendFunc, trianglesTwoColor, transform, transformFlags);
-#endif
 				}
 			}
 			_clipper->clipEnd(*slot);
@@ -541,7 +528,7 @@ namespace spine {
 			if (!parent || parent->getChildrenCount() > 100 || getChildrenCount() != 0) {
 				lastTwoColorTrianglesCommand->setForceFlush(true);
 			} else {
-				const ax::Vector<Node *> &children = parent->getChildren();
+				const axmol::Vector<Node *> &children = parent->getChildren();
 				Node *sibling = nullptr;
 				for (ssize_t i = 0; i < children.size(); i++) {
 					if (children.at(i) == this) {
@@ -588,12 +575,7 @@ namespace spine {
 
 		// Draw bounding rectangle
 		if (_debugBoundingRect) {
-#if COCOS2D_VERSION < 0x00040000
-			glLineWidth(2);
-#else
-			drawNode->setLineWidth(2.0f);
-#endif
-			const ax::Rect brect = getBoundingBox();
+			const axmol::Rect brect = getBoundingBox();
 			const Vec2 points[4] =
 					{
 							brect.origin,
@@ -606,13 +588,8 @@ namespace spine {
 		if (_debugSlots) {
 			// Slots.
 			// DrawPrimitives::setDrawColor4B(0, 0, 255, 255);
-#if COCOS2D_VERSION < 0x00040000
-			glLineWidth(2);
-#else
-			drawNode->setLineWidth(2.0f);
-#endif
 			V3F_C4B_T2F_Quad quad;
-			for (int i = 0, n = _skeleton->getSlots().size(); i < n; i++) {
+			for (int i = 0, n = (int)_skeleton->getSlots().size(); i < n; i++) {
 				Slot *slot = _skeleton->getDrawOrder()[i];
 
 				if (!slot->getBone().isActive()) continue;
@@ -637,12 +614,7 @@ namespace spine {
 
 		if (_debugBones) {
 			// Bone lengths.
-#if COCOS2D_VERSION < 0x00040000
-			glLineWidth(2);
-#else
-			drawNode->setLineWidth(2.0f);
-#endif
-			for (int i = 0, n = _skeleton->getBones().size(); i < n; i++) {
+			for (int i = 0, n = (int)_skeleton->getBones().size(); i < n; i++) {
 				Bone *bone = _skeleton->getBones()[i];
 				if (!bone->isActive()) continue;
 				float x = bone->getData().getLength() * bone->getA() + bone->getWorldX();
@@ -661,12 +633,7 @@ namespace spine {
 
 		if (_debugMeshes) {
 			// Meshes.
-#if COCOS2D_VERSION < 0x00040000
-			glLineWidth(2);
-#else
-			drawNode->setLineWidth(2.0f);
-#endif
-			for (int i = 0, n = _skeleton->getSlots().size(); i < n; ++i) {
+			for (int i = 0, n = (int)_skeleton->getSlots().size(); i < n; ++i) {
 				Slot *slot = _skeleton->getDrawOrder()[i];
 				if (!slot->getBone().isActive()) continue;
 				if (!slot->getAttachment() || !slot->getAttachment()->getRTTI().isExactly(MeshAttachment::rtti)) continue;
@@ -695,12 +662,12 @@ namespace spine {
 #endif
 	}
 
-	ax::Rect SkeletonRenderer::getBoundingBox() const {
+	axmol::Rect SkeletonRenderer::getBoundingBox() const {
 		const int coordCount = computeTotalCoordCount(*_skeleton, _startSlotIndex, _endSlotIndex);
 		if (coordCount == 0) return {0, 0, 0, 0};
 		VLA(float, worldCoords, coordCount);
 		transformWorldVertices(worldCoords, coordCount, *_skeleton, _startSlotIndex, _endSlotIndex);
-		const ax::Rect bb = computeBoundingRect(worldCoords, coordCount / 2);
+		const axmol::Rect bb = computeBoundingRect(worldCoords, coordCount / 2);
 		VLA_FREE(worldCoords);
 		return bb;
 	}
@@ -751,18 +718,12 @@ namespace spine {
 	}
 
 	void SkeletonRenderer::setTwoColorTint(bool enabled) {
-#if COCOS2D_VERSION >= 0x00040000
 		_twoColorTint = enabled;
-#endif
 		setupGLProgramState(enabled);
 	}
 
 	bool SkeletonRenderer::isTwoColorTint() {
-#if COCOS2D_VERSION < 0x00040000
-		return getGLProgramState() == SkeletonTwoColorBatch::getInstance()->getTwoColorTintProgramState();
-#else
 		return _twoColorTint;
-#endif
 	}
 
 	void SkeletonRenderer::setVertexEffect(VertexEffect *effect) {
@@ -815,17 +776,11 @@ namespace spine {
 	}
 
 	void SkeletonRenderer::onEnter() {
-#if CC_ENABLE_SCRIPT_BINDING && COCOS2D_VERSION < 0x00040000
-		if (_scriptType == kScriptTypeJavascript && ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnEnter)) return;
-#endif
 		Node::onEnter();
 		scheduleUpdate();
 	}
 
 	void SkeletonRenderer::onExit() {
-#if CC_ENABLE_SCRIPT_BINDING && COCOS2D_VERSION < 0x00040000
-		if (_scriptType == kScriptTypeJavascript && ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnExit)) return;
-#endif
 		Node::onExit();
 		unscheduleUpdate();
 	}
@@ -849,7 +804,7 @@ namespace spine {
 	}
 
 	namespace {
-		ax::Rect computeBoundingRect(const float *coords, int vertexCount) {
+		axmol::Rect computeBoundingRect(const float *coords, int vertexCount) {
 			assert(coords);
 			assert(vertexCount > 0);
 
@@ -957,27 +912,6 @@ namespace spine {
 
 		BlendFunc makeBlendFunc(BlendMode blendMode, bool premultipliedAlpha) {
 			BlendFunc blendFunc;
-
-#if COCOS2D_VERSION < 0x00040000
-			switch (blendMode) {
-				case BlendMode_Additive:
-					blendFunc.src = premultipliedAlpha ? GL_ONE : GL_SRC_ALPHA;
-					blendFunc.dst = GL_ONE;
-					break;
-				case BlendMode_Multiply:
-					blendFunc.src = GL_DST_COLOR;
-					blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
-					break;
-				case BlendMode_Screen:
-					blendFunc.src = GL_ONE;
-					blendFunc.dst = GL_ONE_MINUS_SRC_COLOR;
-					break;
-				default:
-					blendFunc.src = premultipliedAlpha ? GL_ONE : GL_SRC_ALPHA;
-					blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
-					break;
-			}
-#else
 			switch (blendMode) {
 				case BlendMode_Additive:
 					blendFunc.src = premultipliedAlpha ? backend::BlendFactor::ONE : backend::BlendFactor::SRC_ALPHA;
@@ -995,12 +929,11 @@ namespace spine {
 					blendFunc.src = premultipliedAlpha ? backend::BlendFactor::ONE : backend::BlendFactor::SRC_ALPHA;
 					blendFunc.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA;
 			}
-#endif
 			return blendFunc;
 		}
 
 
-		bool cullRectangle(Renderer *renderer, const Mat4 &transform, const ax::Rect &rect) {
+		bool cullRectangle(Renderer *renderer, const Mat4 &transform, const axmol::Rect &rect) {
 			if (Camera::getVisitingCamera() == nullptr)
 				return false;
 

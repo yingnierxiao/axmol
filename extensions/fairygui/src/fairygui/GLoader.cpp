@@ -541,6 +541,23 @@ void GLoader::loadExternal()
             // 使用tag来标识这是一个Spine节点
             skeletonAni->setTag(9999); // 使用特殊tag标识Spine节点
 
+            // 自动播放第一个动画(如果存在)
+            auto skeleton = skeletonAni->getSkeleton();
+            if (skeleton && skeleton->getData())
+            {
+                auto& animations = skeleton->getData()->getAnimations();
+                if (animations.size() > 0)
+                {
+                    std::string firstAnimName = animations[0]->getName().buffer();
+                    skeletonAni->setAnimation(0, firstAnimName, true);
+                    AXLOG("[GLoader] Auto-playing first animation: %s", firstAnimName.c_str());
+                }
+                else
+                {
+                    AXLOG("[GLoader] Warning: No animations found in skeleton");
+                }
+            }
+
             // 获取骨骼尺寸作为sourceSize
             auto bounds = skeletonAni->getBoundingBox();
             sourceSize.width = bounds.size.width;

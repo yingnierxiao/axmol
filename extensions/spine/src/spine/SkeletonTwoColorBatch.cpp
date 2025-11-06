@@ -27,7 +27,7 @@
  * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-#include <spine/spine-cocos2dx.h>
+#include <spine/spine-axmol.h>
 #include <algorithm>
 #include <spine/Extension.h>
 #include <stddef.h>// offsetof
@@ -97,10 +97,10 @@ namespace spine {
 		_type = RenderCommand::Type::CUSTOM_COMMAND;
 	}
 
-	void TwoColorTrianglesCommand::init(float globalOrder, ax::Texture2D *texture, ax::backend::ProgramState *programState, BlendFunc blendType, const TwoColorTriangles &triangles, const Mat4 &mv, uint32_t flags) {
+	void TwoColorTrianglesCommand::init(float globalOrder, axmol::Texture2D *texture, axmol::backend::ProgramState *programState, BlendFunc blendType, const TwoColorTriangles &triangles, const Mat4 &mv, uint32_t flags) {
 
 		updateCommandPipelineDescriptor(programState);
-		const ax::Mat4 &projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+		const axmol::Mat4 &projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
 		auto finalMatrix = projectionMat * mv;
 
@@ -136,7 +136,7 @@ namespace spine {
 	}
 
 
-	void TwoColorTrianglesCommand::updateCommandPipelineDescriptor(ax::backend::ProgramState *programState) {
+	void TwoColorTrianglesCommand::updateCommandPipelineDescriptor(axmol::backend::ProgramState *programState) {
 		// OPTIMIZE ME: all commands belong a same Node should share a same programState like SkeletonBatch
 		if (!__twoColorProgramState) {
 			initTwoColorProgramState();
@@ -282,7 +282,7 @@ namespace spine {
 	unsigned short *SkeletonTwoColorBatch::allocateIndices(uint32_t numIndices) {
 		if (_indices.getCapacity() - _indices.size() < numIndices) {
 			unsigned short *oldData = _indices.buffer();
-			int oldSize = _indices.size();
+			int oldSize = (int)_indices.size();
 			_indices.ensureCapacity(_indices.size() + numIndices);
 			unsigned short *newData = _indices.buffer();
 			for (uint32_t i = 0; i < this->_nextFreeCommand; i++) {
@@ -303,7 +303,7 @@ namespace spine {
 		_indices.setSize(_indices.size() - numIndices, 0);
 	}
 
-	TwoColorTrianglesCommand *SkeletonTwoColorBatch::addCommand(ax::Renderer *renderer, float globalOrder, ax::Texture2D *texture, backend::ProgramState *programState, ax::BlendFunc blendType, const TwoColorTriangles &triangles, const ax::Mat4 &mv, uint32_t flags) {
+	TwoColorTrianglesCommand *SkeletonTwoColorBatch::addCommand(axmol::Renderer *renderer, float globalOrder, axmol::Texture2D *texture, backend::ProgramState *programState, axmol::BlendFunc blendType, const TwoColorTriangles &triangles, const axmol::Mat4 &mv, uint32_t flags) {
 		TwoColorTrianglesCommand *command = nextFreeCommand();
 		command->init(globalOrder, texture, programState, blendType, triangles, mv, flags);
 		command->updateVertexAndIndexBuffer(renderer, triangles.verts, triangles.vertCount, triangles.indices, triangles.indexCount);
@@ -311,7 +311,7 @@ namespace spine {
 		return command;
 	}
 
-	void SkeletonTwoColorBatch::batch(ax::Renderer *renderer, TwoColorTrianglesCommand *command) {
+	void SkeletonTwoColorBatch::batch(axmol::Renderer *renderer, TwoColorTrianglesCommand *command) {
 		if (_numVerticesBuffer + command->getTriangles().vertCount >= MAX_VERTICES || _numIndicesBuffer + command->getTriangles().indexCount >= MAX_INDICES) {
 			flush(renderer, _lastCommand);
 		}
@@ -342,7 +342,7 @@ namespace spine {
 		_lastCommand = command;
 	}
 
-	void SkeletonTwoColorBatch::flush(ax::Renderer *renderer, TwoColorTrianglesCommand *materialCommand) {
+	void SkeletonTwoColorBatch::flush(axmol::Renderer *renderer, TwoColorTrianglesCommand *materialCommand) {
 		if (!materialCommand)
 			return;
 
@@ -367,8 +367,8 @@ namespace spine {
 
 	TwoColorTrianglesCommand *SkeletonTwoColorBatch::nextFreeCommand() {
 		if (_commandsPool.size() <= _nextFreeCommand) {
-			unsigned int newSize = _commandsPool.size() * 2 + 1;
-			for (int i = _commandsPool.size(); i < newSize; i++) {
+			unsigned int newSize = (int)_commandsPool.size() * 2 + 1;
+			for (int i = (int)_commandsPool.size(); i < newSize; i++) {
 				_commandsPool.push_back(new TwoColorTrianglesCommand());
 			}
 		}

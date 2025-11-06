@@ -30,7 +30,11 @@
       "Bash(cat:*)",
       "Bash(cmake --build:*)",
       "Bash(cmake:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(chmod:*)",
+      "Bash(./fix_spine40_to_axmol_safe.sh:*)",
+      "Bash(dir:*)",
+      "Bash(cmd.exe /c \"dir /b D:\\COP\\cop_mytools\\axmol\\projects\\SlotGame\\build\")"
     ],
     "deny": [],
     "ask": []
