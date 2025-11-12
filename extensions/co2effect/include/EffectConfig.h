@@ -70,9 +70,10 @@ public:
     /**
      * 加载EFFE配置文件
      * @param filepath INI文件路径(例如: +3DEffect.ini)
+     * @param wdbPath WDB文件路径(可选，优先从WDB加载)
      * @return 成功返回true
      */
-    bool loadFromFile(const std::string& filepath);
+    bool loadFromFile(const std::string& filepath, const std::string& wdbPath = "");
 
     /**
      * 获取特效配置

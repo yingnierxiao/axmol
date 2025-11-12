@@ -3,6 +3,7 @@
  ****************************************************************************/
 
 #include "C3FileReader.h"
+#include "WDBReader.h"
 #include "cocos2d.h"
 #include <cstring>
 
@@ -42,13 +43,35 @@ std::string C3FileReader::readString(const uint8_t*& ptr, const uint8_t* end)
 }
 
 // 读取C3文件
-bool C3FileReader::readC3File(const std::string& filepath, C3FileData& outData)
+bool C3FileReader::readC3File(const std::string& filepath, C3FileData& outData, const std::string& wdbPath)
 {
-    auto fileData = FileUtils::getInstance()->getDataFromFile(filepath);
+    Data fileData;
+
+    // 优先从WDB加载
+    if (!wdbPath.empty())
+    {
+        WDBReader wdbReader;
+        if (wdbReader.open(wdbPath))
+        {
+            AXLOG("C3FileReader: Trying to load from WDB: %s", filepath.c_str());
+            fileData = wdbReader.readFile(filepath);
+            if (!fileData.isNull())
+            {
+                AXLOG("C3FileReader: Loaded from WDB successfully");
+            }
+        }
+    }
+
+    // 如果WDB加载失败，尝试从文件系统加载
     if (fileData.isNull())
     {
-        AXLOG("C3FileReader: Failed to read file: %s", filepath.c_str());
-        return false;
+        AXLOG("C3FileReader: Loading from file system: %s", filepath.c_str());
+        fileData = FileUtils::getInstance()->getDataFromFile(filepath);
+        if (fileData.isNull())
+        {
+            AXLOG("C3FileReader: Failed to read file: %s", filepath.c_str());
+            return false;
+        }
     }
 
     return readC3FileFromMemory(fileData.getBytes(), fileData.getSize(), outData);

@@ -6,12 +6,14 @@ set(${LIB_NAME}_HEADERS
     include/C3FileReader.h
     include/EffectConfig.h
     include/CO2EffectPlayer.h
+    include/WDBReader.h
 )
 
 set(${LIB_NAME}_SOURCES
     src/C3FileReader.cpp
     src/EffectConfig.cpp
     src/CO2EffectPlayer.cpp
+    src/WDBReader.cpp
 )
 
 add_library(${LIB_NAME} STATIC

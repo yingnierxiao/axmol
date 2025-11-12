@@ -35,8 +35,11 @@ public:
      * 设置全局默认资源路径和配置文件
      * @param configPath INI配置文件路径
      * @param resourcePath C3资源根路径
+     * @param wdbPath WDB打包文件路径(可选，例如: "ini/c3.wdb")
      */
-    static void setGlobalConfig(const std::string& configPath, const std::string& resourcePath);
+    static void setGlobalConfig(const std::string& configPath,
+                               const std::string& resourcePath,
+                               const std::string& wdbPath = "");
 
     /**
      * 获取全局配置文件路径
@@ -47,6 +50,11 @@ public:
      * 获取全局资源路径
      */
     static const std::string& getGlobalResourcePath();
+
+    /**
+     * 获取全局WDB路径
+     */
+    static const std::string& getGlobalWDBPath();
 
     /**
      * 设置资源根路径

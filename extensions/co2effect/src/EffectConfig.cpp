@@ -3,6 +3,7 @@
  ****************************************************************************/
 
 #include "EffectConfig.h"
+#include "WDBReader.h"
 #include "cocos2d.h"
 #include <sstream>
 #include <cctype>
@@ -20,15 +21,55 @@ void EffectConfigReader::clear()
     _effects.clear();
 }
 
-bool EffectConfigReader::loadFromFile(const std::string& filepath)
+bool EffectConfigReader::loadFromFile(const std::string& filepath, const std::string& wdbPath)
 {
     clear();
 
-    auto content = FileUtils::getInstance()->getStringFromFile(filepath);
+    std::string content;
+
+    // 优先从WDB加载
+    if (!wdbPath.empty())
+    {
+        WDBReader wdbReader;
+        if (wdbReader.open(wdbPath))
+        {
+            // WDB中的文件名不带"+"前缀，需要移除
+            std::string wdbFilepath = filepath;
+            size_t plusPos = wdbFilepath.find("/+");
+            if (plusPos != std::string::npos)
+            {
+                wdbFilepath = wdbFilepath.substr(0, plusPos + 1) + wdbFilepath.substr(plusPos + 2);
+            }
+
+            AXLOG("EffectConfigReader: Trying to load from WDB: %s (mapped to: %s)",
+                  filepath.c_str(), wdbFilepath.c_str());
+            auto data = wdbReader.readFile(wdbFilepath);
+            if (!data.isNull())
+            {
+                content.assign(reinterpret_cast<const char*>(data.getBytes()), data.getSize());
+                AXLOG("EffectConfigReader: Loaded from WDB successfully");
+            }
+            else
+            {
+                AXLOG("EffectConfigReader: File not found in WDB: %s", wdbFilepath.c_str());
+            }
+        }
+        else
+        {
+            AXLOG("EffectConfigReader: Failed to open WDB: %s", wdbPath.c_str());
+        }
+    }
+
+    // 如果WDB加载失败，尝试从文件系统加载
     if (content.empty())
     {
-        AXLOG("EffectConfigReader: Failed to read file: %s", filepath.c_str());
-        return false;
+        AXLOG("EffectConfigReader: Loading from file system: %s", filepath.c_str());
+        content = FileUtils::getInstance()->getStringFromFile(filepath);
+        if (content.empty())
+        {
+            AXLOG("EffectConfigReader: Failed to read file: %s", filepath.c_str());
+            return false;
+        }
     }
 
     return parseINI(content);

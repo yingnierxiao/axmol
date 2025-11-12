@@ -131,7 +131,7 @@ public:
     C3FileReader();
     ~C3FileReader();
 
-    static bool readC3File(const std::string& filepath, C3FileData& outData);
+    static bool readC3File(const std::string& filepath, C3FileData& outData, const std::string& wdbPath = "");
     static bool readC3FileFromMemory(const uint8_t* data, size_t size, C3FileData& outData);
 
 private:

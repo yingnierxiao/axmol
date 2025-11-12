@@ -17,13 +17,17 @@ using ax::backend::BlendFactor;
 // 全局配置
 static std::string s_globalConfigPath;
 static std::string s_globalResourcePath;
+static std::string s_globalWDBPath;
 
-void CO2EffectPlayer::setGlobalConfig(const std::string& configPath, const std::string& resourcePath)
+void CO2EffectPlayer::setGlobalConfig(const std::string& configPath,
+                                     const std::string& resourcePath,
+                                     const std::string& wdbPath)
 {
     s_globalConfigPath = configPath;
     s_globalResourcePath = resourcePath;
-    AXLOG("CO2EffectPlayer: Global config set - config=%s, resource=%s",
-          configPath.c_str(), resourcePath.c_str());
+    s_globalWDBPath = wdbPath;
+    AXLOG("CO2EffectPlayer: Global config set - config=%s, resource=%s, wdb=%s",
+          configPath.c_str(), resourcePath.c_str(), wdbPath.c_str());
 }
 
 const std::string& CO2EffectPlayer::getGlobalConfigPath()
@@ -34,6 +38,11 @@ const std::string& CO2EffectPlayer::getGlobalConfigPath()
 const std::string& CO2EffectPlayer::getGlobalResourcePath()
 {
     return s_globalResourcePath;
+}
+
+const std::string& CO2EffectPlayer::getGlobalWDBPath()
+{
+    return s_globalWDBPath;
 }
 
 CO2EffectPlayer::CO2EffectPlayer()
@@ -77,7 +86,10 @@ void CO2EffectPlayer::setResourcePath(const std::string& path)
 
 bool CO2EffectPlayer::loadEffectConfig(const std::string& configPath)
 {
-    if (!_configReader.loadFromFile(configPath))
+    // 使用全局WDB路径(如果有配置)
+    std::string wdbPath = s_globalWDBPath;
+
+    if (!_configReader.loadFromFile(configPath, wdbPath))
     {
         AXLOG("CO2EffectPlayer: Failed to load config: %s", configPath.c_str());
         return false;
