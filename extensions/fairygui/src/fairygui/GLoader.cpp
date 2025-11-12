@@ -6,6 +6,7 @@
 #include "utils/ByteBuffer.h"
 #include "utils/ToolSet.h"
 #include "spine/spine-cocos2dx.h"
+#include "CO2EffectPlayer.h"
 #include <unordered_map>
 
 NS_FGUI_BEGIN
@@ -376,6 +377,75 @@ void GLoader::loadFromPackage()
 
 void GLoader::loadExternal()
 {
+    // 处理effect://协议 (CO2特效系统)
+    if (_url.compare(0, 9, "effect://") == 0)
+    {
+        std::string effectName = _url.substr(9);
+        AXLOG("[GLoader] Loading CO2 effect: %s", effectName.c_str());
+
+        // 创建CO2特效播放器
+        auto player = co2effect::CO2EffectPlayer::create();
+        if (!player)
+        {
+            AXLOG("[GLoader] Failed to create CO2EffectPlayer");
+            onExternalLoadFailed();
+            return;
+        }
+
+        // 使用全局配置或默认路径
+        std::string configPath = co2effect::CO2EffectPlayer::getGlobalConfigPath();
+        std::string resourcePath = co2effect::CO2EffectPlayer::getGlobalResourcePath();
+
+        if (configPath.empty())
+        {
+            configPath = "ini/+3DEffect.ini";
+            AXLOG("[GLoader] Using default config path: %s", configPath.c_str());
+        }
+
+        if (resourcePath.empty())
+        {
+            resourcePath = "c3/effect/";
+            AXLOG("[GLoader] Using default resource path: %s", resourcePath.c_str());
+        }
+
+        // 设置资源路径
+        player->setResourcePath(resourcePath);
+
+        // 加载特效配置
+        if (!player->loadEffectConfig(configPath))
+        {
+            AXLOG("[GLoader] Failed to load effect config for: %s", effectName.c_str());
+            onExternalLoadFailed();
+            return;
+        }
+
+        // 播放特效
+        if (!player->playEffect(effectName))
+        {
+            AXLOG("[GLoader] Failed to play effect: %s", effectName.c_str());
+            onExternalLoadFailed();
+            return;
+        }
+
+        _contentStatus = 6; // 使用新的状态码表示CO2特效内容
+
+        // 隐藏默认的sprite内容
+        _content->setVisible(false);
+
+        // 添加特效播放器到displayObject
+        player->setAnchorPoint(Vec2(0.5f, 0.5f));
+        _displayObject->addChild(player);
+        player->setTag(9998); // 使用特殊tag标识CO2特效节点
+
+        // 设置sourceSize (使用默认尺寸或从配置读取)
+        sourceSize.width = 200;  // 默认尺寸
+        sourceSize.height = 200;
+
+        updateLayout();
+        AXLOG("[GLoader] CO2 effect loaded successfully: %s", effectName.c_str());
+        return;
+    }
+
     // 处理spine://协议
     if (_url.compare(0, 8, "spine://") == 0)
     {

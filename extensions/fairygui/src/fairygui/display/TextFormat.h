@@ -35,7 +35,7 @@ public:
 
     int effect;
     ax::Color3B outlineColor;
-    int outlineSize;
+    float outlineSize;
     ax::Color3B shadowColor;
     ax::Size shadowOffset;
     int shadowBlurRadius;

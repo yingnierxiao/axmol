@@ -106,6 +106,7 @@ void FUILabel::applyTextFormat()
         disableEffect(LabelEffect::BOLD);
 
     setLineSpacing(_textFormat->lineSpacing);
+    setAdditionalKerning(_textFormat->letterSpacing);
     setHorizontalAlignment(_textFormat->align);
     setVerticalAlignment(_textFormat->verticalAlign);
 

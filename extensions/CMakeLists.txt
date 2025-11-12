@@ -65,16 +65,26 @@ if(AX_ENABLE_EXT_DRAGONBONES)
   add_subdirectory(DragonBones)
 endif()
 
+# Add co2effect extension (needed by fairygui)
+add_subdirectory(co2effect)
+
 if(AX_ENABLE_EXT_FAIRYGUI)
   add_subdirectory(fairygui)
 
+  # Always add co2effect include directories
+  target_include_directories(fairygui
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/co2effect/include
+  )
+
   if(BUILD_SHARED_LIBS)
-    target_link_libraries(fairygui spine)
+    target_link_libraries(fairygui spine co2effect)
   else()
     target_include_directories(fairygui
       PUBLIC ${CMAKE_CURRENT_LIST_DIR}/spine/runtime/include
       PUBLIC ${CMAKE_CURRENT_LIST_DIR}/spine/src
     )
+    # Link co2effect library in static mode
+    target_link_libraries(fairygui co2effect)
   endif()
 endif()
 

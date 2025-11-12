@@ -9,6 +9,7 @@ target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
 target_include_directories(${target_name}
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/fairygui
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../co2effect/include
 
   INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src
   INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src/fairygui
