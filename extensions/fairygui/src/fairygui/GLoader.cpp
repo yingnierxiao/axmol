@@ -249,6 +249,55 @@ void GLoader::setFrame(int value)
     }
 }
 
+void GLoader::setAnimationName(const std::string& value)
+{
+    if (_animationName != value)
+    {
+        _animationName = value;
+
+        // 如果已加载Spine动画，立即应用
+        if (_contentStatus == 5) // Spine content
+        {
+            auto spineNode = _displayObject->getChildByTag(9999);
+            if (spineNode)
+            {
+                auto skeletonAni = dynamic_cast<spine::SkeletonAnimation*>(spineNode);
+                if (skeletonAni && !_animationName.empty())
+                {
+                    skeletonAni->setAnimation(0, _animationName, true);
+                }
+            }
+        }
+    }
+}
+
+void GLoader::setSkinName(const std::string& value)
+{
+    if (_skinName != value)
+    {
+        _skinName = value;
+
+        // 如果已加载Spine动画，立即应用
+        if (_contentStatus == 5) // Spine content
+        {
+            auto spineNode = _displayObject->getChildByTag(9999);
+            if (spineNode)
+            {
+                auto skeletonAni = dynamic_cast<spine::SkeletonAnimation*>(spineNode);
+                if (skeletonAni && !_skinName.empty())
+                {
+                    auto skeleton = skeletonAni->getSkeleton();
+                    if (skeleton)
+                    {
+                        skeleton->setSkin(_skinName.c_str());
+                        skeleton->setSlotsToSetupPose();
+                    }
+                }
+            }
+        }
+    }
+}
+
 FillMethod GLoader::getFillMethod() const
 {
     return _content->getFillMethod();
@@ -611,20 +660,37 @@ void GLoader::loadExternal()
             // 使用tag来标识这是一个Spine节点
             skeletonAni->setTag(9999); // 使用特殊tag标识Spine节点
 
-            // 自动播放第一个动画(如果存在)
             auto skeleton = skeletonAni->getSkeleton();
             if (skeleton && skeleton->getData())
             {
-                auto& animations = skeleton->getData()->getAnimations();
-                if (animations.size() > 0)
+                // 优先应用通过 setSkinName 设置的皮肤
+                if (!_skinName.empty())
                 {
-                    std::string firstAnimName = animations[0]->getName().buffer();
-                    skeletonAni->setAnimation(0, firstAnimName, true);
-                    AXLOG("[GLoader] Auto-playing first animation: %s", firstAnimName.c_str());
+                    skeleton->setSkin(_skinName.c_str());
+                    skeleton->setSlotsToSetupPose();
+                    AXLOG("[GLoader] Applied preset skin: %s", _skinName.c_str());
+                }
+
+                // 优先应用通过 setAnimationName 设置的动画
+                if (!_animationName.empty())
+                {
+                    skeletonAni->setAnimation(0, _animationName, true);
+                    AXLOG("[GLoader] Applied preset animation: %s", _animationName.c_str());
                 }
                 else
                 {
-                    AXLOG("[GLoader] Warning: No animations found in skeleton");
+                    // 如果没有预设动画，自动播放第一个动画
+                    auto& animations = skeleton->getData()->getAnimations();
+                    if (animations.size() > 0)
+                    {
+                        std::string firstAnimName = animations[0]->getName().buffer();
+                        skeletonAni->setAnimation(0, firstAnimName, true);
+                        AXLOG("[GLoader] Auto-playing first animation: %s", firstAnimName.c_str());
+                    }
+                    else
+                    {
+                        AXLOG("[GLoader] Warning: No animations found in skeleton");
+                    }
                 }
             }
 

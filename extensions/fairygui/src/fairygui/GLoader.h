@@ -51,6 +51,12 @@ public:
     int getFrame() const;
     void setFrame(int value);
 
+    const std::string& getAnimationName() const { return _animationName; }
+    void setAnimationName(const std::string& value);
+
+    const std::string& getSkinName() const { return _skinName; }
+    void setSkinName(const std::string& value);
+
     FillMethod getFillMethod() const;
     void setFillMethod(FillMethod value);
 
@@ -103,6 +109,8 @@ private:
     FUISprite* _content;
     GComponent* _content2;
     ActionMovieClip* _playAction;
+    std::string _animationName;
+    std::string _skinName;
 };
 
 NS_FGUI_END

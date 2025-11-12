@@ -1,6 +1,7 @@
 #include "Transition.h"
 #include "GComponent.h"
 #include "GRoot.h"
+#include "GLoader.h"
 #include "tween/GPath.h"
 #include "tween/GTween.h"
 #include "utils/ByteBuffer.h"
@@ -30,6 +31,8 @@ public:
     int frame;
     bool playing;
     bool flag;
+    std::string animationName;
+    std::string skinName;
 };
 
 class TValue_Sound : public TValueBase
@@ -561,6 +564,10 @@ void Transition::setValue(const std::string& label, const ValueVector& values)
             tvalue->frame = values[0].asInt();
             if (values.size() > 1)
                 tvalue->playing = values[1].asBool();
+            if (values.size() > 2)
+                tvalue->animationName = values[2].asString();
+            if (values.size() > 3)
+                tvalue->skinName = values[3].asString();
             break;
         }
 
@@ -1285,6 +1292,20 @@ void Transition::applyValue(TransitionItem* item)
             item->target->setProp(ObjectPropID::Frame, Value(value->frame));
         item->target->setProp(ObjectPropID::Playing, Value(value->playing));
         item->target->setProp(ObjectPropID::TimeScale, Value(_timeScale));
+
+        // 应用animationName和skinName到GLoader
+        GLoader* loader = dynamic_cast<GLoader*>(item->target);
+        if (loader)
+        {
+            if (!value->animationName.empty())
+            {
+                loader->setAnimationName(value->animationName);
+            }
+            if (!value->skinName.empty())
+            {
+                loader->setSkinName(value->skinName);
+            }
+        }
         break;
     }
 
@@ -1494,6 +1515,11 @@ void Transition::decodeValue(TransitionItem* item, ByteBuffer* buffer, void* val
     {
         ((TValue_Animation*)value)->playing = buffer->readBool();
         ((TValue_Animation*)value)->frame = buffer->readInt();
+        if (buffer->version >= 6)
+        {
+            ((TValue_Animation*)value)->animationName = buffer->readS();
+            ((TValue_Animation*)value)->skinName = buffer->readS();
+        }
         break;
     }
 
