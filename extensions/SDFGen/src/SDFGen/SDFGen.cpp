@@ -94,15 +94,29 @@ public:
             storePath += path;
         }
 
+        AXLOG("=========================================");
+        AXLOG("保存字体图集文件:");
+        AXLOG("  输入路径: %s", std::string(path).c_str());
+        AXLOG("  完整路径: %s", storePath.c_str());
+
         auto start = yasio::highp_clock();
 
         JsonWriter<> xasset;
 
         xasset.writeStartObject();
 
+        // 处理 sourceFont 路径：去掉 "res/" 前缀（如果有的话）
+        // 因为运行时会添加 "res" 到搜索路径，所以保存时应该使用相对于搜索路径的路径
+        std::string sourceFontPath = _params->sourceFont;
+        if (cxx20::starts_with(sourceFontPath, "res/"))
+        {
+            sourceFontPath = sourceFontPath.substr(4);  // 去掉 "res/"
+            AXLOG("  调整 sourceFont: %s -> %s", _params->sourceFont.c_str(), sourceFontPath.c_str());
+        }
+
         xasset.writeString("version"sv, AX_VERSION_STR_FULL);
         xasset.writeString("type"sv, "fontatlas"sv);
-        xasset.writeString("sourceFont"sv, _params->sourceFont);
+        xasset.writeString("sourceFont"sv, sourceFontPath);
         xasset.writeString("atlasName"sv, _atlasName);
         xasset.writeNumber("spread"sv, 6);
         xasset.writeNumber("faceSize"sv, _params->faceSize);
@@ -172,7 +186,13 @@ protected:
         _params = params;
 
         // match with runtime
-        _atlasName = fmt::format("df {} {}", params->faceSize, params->sourceFont);
+        // 注意：atlasName 中的路径应该去掉 "res/" 前缀，与运行时匹配
+        std::string sourceFontPath = params->sourceFont;
+        if (cxx20::starts_with(sourceFontPath, "res/"))
+        {
+            sourceFontPath = sourceFontPath.substr(4);  // 去掉 "res/"
+        }
+        _atlasName = fmt::format("df {} {}", params->faceSize, sourceFontPath);
 
         std::u32string utf32;
         if (StringUtils::UTF8ToUTF32(_fontFreeType->getGlyphCollection(), utf32))
@@ -205,27 +225,62 @@ void SDFGen::destroyInstance()
 
 void SDFGen::open(ax::Scene* scene)
 {
+    AXLOG("SDFGen::open() - Starting...");
     refreshFontList();
 
+    AXLOG("Creating atlas viewer sprite...");
     _atlasViewer = Sprite::create();
+    if (!_atlasViewer)
+    {
+        AXLOG("ERROR: Failed to create sprite!");
+        return;
+    }
+    AXLOG("Sprite created successfully");
+
+    AXLOG("Setting sprite texture...");
     _atlasViewer->setTexture(Director::getInstance()->getTextureCache()->getWhiteTexture("/black-texture", 0));
+    AXLOG("Texture set successfully");
+
     _atlasViewer->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
     _atlasViewer->retain();
+    AXLOG("Atlas viewer initialized successfully");
 
     auto defaultFontFile = FileUtils::getInstance()->fullPathForFilename(R"(fonts/arial.ttf)");
 
-    _atlasParams             = new FontAtlasGenParams();
-    _atlasParams->sourceFont = "fonts/arial.ttf";
-    _atlasParams->fontAsset  = "fonts/arial-SDF.xasset";
+    // 打印字体路径调试信息
+    AXLOG("=========================================");
+    AXLOG("SDFGen::open() - Font path debugging:");
+    AXLOG("  Relative path: fonts/arial.ttf");
+    AXLOG("  Full path: %s", defaultFontFile.c_str());
+    AXLOG("  File exists: %s", FileUtils::getInstance()->isFileExist(defaultFontFile) ? "YES" : "NO");
+    AXLOG("=========================================");
 
+    _atlasParams             = new FontAtlasGenParams();
+    // 默认值应该使用相对于 Content 的路径（res/fonts/）
+    _atlasParams->sourceFont = "res/fonts/arial.ttf";
+    _atlasParams->fontAsset  = "res/fonts/arial-SDF.xasset";
+
+    AXLOG("Step 1: Creating FontAtlasGenParams - OK");
+
+    AXLOG("Step 2: Adding font to ImGui...");
     ImGuiPresenter::getInstance()->addFont(defaultFontFile);
+    AXLOG("Step 2: Font added - OK");
+
     /* For Simplified Chinese support, please use:
     ImGuiPresenter::getInstance()->addFont(R"(C:\Windows\Fonts\msyh.ttc)", ImGuiPresenter::DEFAULT_FONT_SIZE,
                                        ImGuiPresenter::GLYPH_RANGES::CHINESE_GENERAL);
     */
+
+    AXLOG("Step 3: Enabling DPI scale...");
     ImGuiPresenter::getInstance()->enableDPIScale();  // enable dpi scale for 4K display support, depends at least one
                                                       // valid ttf/ttc font was added.
+    AXLOG("Step 3: DPI scale enabled - OK");
+
+    AXLOG("Step 4: Adding render loop...");
     ImGuiPresenter::getInstance()->addRenderLoop("#sdfg", AX_CALLBACK_0(SDFGen::onImGuiDraw, this), scene);
+    AXLOG("Step 4: Render loop added - OK");
+
+    AXLOG("SDFGen::open() completed successfully!");
 }
 
 void SDFGen::close()
@@ -244,19 +299,42 @@ void SDFGen::refreshFontList()
 
     auto fu = FileUtils::getInstance();
 
+    // 打印路径调试信息
+    auto& contentPath = fu->getDefaultResourceRootPath();
+    auto fontsFullPath = fu->fullPathForFilename("fonts");
+    AXLOG("=========================================");
+    AXLOG("SDFGen::refreshFontList() - Path debugging:");
+    AXLOG("  Content root path: %s", contentPath.c_str());
+    AXLOG("  Fonts relative path: fonts");
+    AXLOG("  Fonts full path: %s", fontsFullPath.c_str());
+
     std::vector<std::string> fileList;
     fu->listFilesRecursively("fonts", &fileList);
 
-    auto& contentPath = fu->getDefaultResourceRootPath();
+    AXLOG("  Found %zu files in fonts directory", fileList.size());
+    AXLOG("=========================================");
+
     for (auto& filePath : fileList)
     {
         if (!cxx20::ic::ends_with(filePath, ".ttf") && !cxx20::ic::ends_with(filePath, ".ttc"))
             continue;
+
+        AXLOG("  Font file (full): %s", filePath.c_str());
+
         if (cxx20::starts_with(filePath, contentPath))
-            _fontList.emplace_back(filePath.substr(contentPath.size()));
+        {
+            auto relativePath = filePath.substr(contentPath.size());
+            AXLOG("  -> Relative path: %s", relativePath.c_str());
+            _fontList.emplace_back(relativePath);
+        }
         else
+        {
+            AXLOG("  -> Keep as is: %s", filePath.c_str());
             _fontList.emplace_back(std::move(filePath));
+        }
     }
+
+    AXLOG("Total font files loaded: %zu", _fontList.size());
 }
 
 void SDFGen::onImGuiDraw()
@@ -278,7 +356,26 @@ void SDFGen::onImGuiDraw()
             {
                 bool is_selected = (_atlasParams->sourceFont == _fontList[n]);
                 if (ImGui::Selectable(_fontList[n].c_str(), is_selected))
+                {
                     _atlasParams->sourceFont = _fontList[n];
+
+                    // 自动生成 fontAsset 文件名：将 .ttf/.ttc 替换为 -SDF.xasset
+                    // 保持和源文件相同的路径（包括 res/fonts/ 等）
+                    auto fontPath = _fontList[n];
+                    auto lastDot = fontPath.find_last_of('.');
+                    if (lastDot != std::string::npos)
+                    {
+                        auto baseName = fontPath.substr(0, lastDot);
+                        _atlasParams->fontAsset = baseName + "-SDF.xasset";
+                    }
+                    else
+                    {
+                        _atlasParams->fontAsset = fontPath + "-SDF.xasset";
+                    }
+
+                    AXLOG("Source font selected: %s", _atlasParams->sourceFont.c_str());
+                    AXLOG("Auto-generated asset: %s", _atlasParams->fontAsset.c_str());
+                }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
@@ -297,6 +394,15 @@ void SDFGen::onImGuiDraw()
         ImGui::Text("%s", "Character Set");
         if (!_atlasParams->useAscii)
         {
+            // 如果切换到 Custom 模式且 glyphs 为空，填充常用中文字符集
+            if (modified && _atlasParams->glyphs.empty())
+            {
+                // 常用中文字符：3500个常用汉字 + 标点符号
+                _atlasParams->glyphs =
+                    "的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经十三之进着等部度家电力里如水化高自二理起小物现实加量都两体制机当使点从业本去把性好应开它合还因由其些然前外天政四日那社义事平形相全表间样与关各重新线内数正心反你明看原又么利比或但质气第向道命此变条只没结解问意建月公无系军很情者最立代想已通并提直题党程展五果料象员革位入常文总次品式活设及管特件长求老头基资边流路级少图山统接知较将组见计别她手角期根论运农指几九区强放决西被干做必战先回则任取据处队南给色光门即保治北造百规热领七海口东导器压志世金增争济阶油思术极交受联什认六共权收证改清己美再采转更单风切打白教速花带安场身车例真务具万每目至达走积示议声报斗完类八离华名确才科张信马节话米整空元况今集温传土许步群广石记需段研界拉林律叫且究观越织装影算低持音众书布复容儿须际商非验连断深难近矿千周委素技备半办青省列习响约支般史感劳便团往酸历市克何除消构府称太准精值号率族维划选标写存候毛亲快效斯院查江型眼王按格养易置派层片始却专状育厂京识适属圆包火住调满县局照参红细引听该铁价严";
+
+                AXLOG("切换到 Custom 模式，已填充常用中文字符集（%zu 字符）", _atlasParams->glyphs.size());
+            }
             ImGui::InputTextMultiline("glyphs", &_atlasParams->glyphs);
         }
         else
@@ -319,10 +425,30 @@ void SDFGen::onImGuiDraw()
             _atlasViewer->setTextureRect(rect);
         }
         ImGui::InputText("Font Asset", &_atlasParams->fontAsset);
+
+        // 显示完整保存路径
+        auto fu = FileUtils::getInstance();
+        std::string fullPath;
+        if (fu->isAbsolutePath(_atlasParams->fontAsset))
+        {
+            fullPath = _atlasParams->fontAsset;
+        }
+        else
+        {
+            fullPath = fu->getDefaultResourceRootPath();
+            fullPath += _atlasParams->fontAsset;
+        }
+        ImGui::TextColored(ImVec4{0.7f, 0.7f, 0.7f, 1.0f}, "Full path: %s", fullPath.c_str());
+
         if (ImGui::Button("Save"))
         {
             if (_fontAtlas)
+            {
+                AXLOG("=========================================");
+                AXLOG("Saving font atlas to: %s", fullPath.c_str());
+                AXLOG("=========================================");
                 _fontAtlas->save();
+            }
             else
                 _atlasParams->error = "Please generate first!";
 
