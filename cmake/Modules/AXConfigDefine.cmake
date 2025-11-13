@@ -224,8 +224,10 @@ endfunction()
 # Set compiler options for engine lib: axmol
 function(use_ax_compile_options target)
   if(FULL_MSVC)
-    # Enable msvc multi-process building
-    target_compile_options(${target} PUBLIC /MP)
+    # Enable msvc multi-process building (限制为2个进程以减少内存占用)
+    target_compile_options(${target} PUBLIC /MP2)
+    # 增加编译器虚拟内存限制因子
+    target_compile_options(${target} PUBLIC /Zm200)
   endif()
 
   if(WASM)
