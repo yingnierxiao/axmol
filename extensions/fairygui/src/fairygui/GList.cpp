@@ -330,6 +330,9 @@ void GList::addSelection(int index, bool scrollItToView)
     GButton* obj = nullptr;
     if (_virtual)
     {
+        if (index < 0 || index >= (int)_virtualItems.size()) {
+            return;
+        }
         ItemInfo& ii = _virtualItems[index];
         if (ii.obj != nullptr)
             obj = ii.obj->as<GButton>();
@@ -353,6 +356,9 @@ void GList::removeSelection(int index)
     GButton* obj = nullptr;
     if (_virtual)
     {
+        if (index < 0 || index >= (int)_virtualItems.size()) {
+            return;
+        }
         ItemInfo& ii = _virtualItems[index];
         if (ii.obj != nullptr)
             obj = ii.obj->as<GButton>();
@@ -882,7 +888,10 @@ void GList::scrollToView(int index, bool ani, bool setFirst)
 
         checkVirtualList();
 
-        AXASSERT(index >= 0 && index < (int)_virtualItems.size(), "Invalid child index");
+        if (index < 0 || index >= (int)_virtualItems.size()) {
+            AXASSERT(index >= 0 && index < (int)_virtualItems.size(), "Invalid child index");
+            return;
+        }
 
         if (_loop)
             index = floor(_firstIndex / _numItems) * _numItems + index;
@@ -963,6 +972,9 @@ int GList::itemIndexToChildIndex(int index)
 
     if (_layout == ListLayoutType::PAGINATION)
     {
+        if (index < 0 || index >= (int)_virtualItems.size()) {
+            return -1;
+        }
         return getChildIndex(_virtualItems[index].obj);
     }
     else
@@ -996,7 +1008,10 @@ void GList::setVirtual(bool loop)
 {
     if (!_virtual)
     {
-        AXASSERT(_scrollPane != nullptr, "FairyGUI: Virtual list must be scrollable!");
+        if (_scrollPane == nullptr) {
+            AXASSERT(_scrollPane != nullptr, "FairyGUI: Virtual list must be scrollable!");
+            return;
+        }
 
         if (loop)
         {
@@ -1013,7 +1028,10 @@ void GList::setVirtual(bool loop)
         if (_itemSize.x == 0 || _itemSize.y == 0)
         {
             GObject* obj = getFromPool();
-            AXASSERT(obj != nullptr, "FairyGUI: Virtual List must have a default list item resource.");
+            if (obj == nullptr) {
+                AXASSERT(obj != nullptr, "FairyGUI: Virtual List must have a default list item resource.");
+                return;
+            }
             _itemSize = obj->getSize();
             _itemSize.x = ceil(_itemSize.x);
             _itemSize.y = ceil(_itemSize.y);
@@ -1050,7 +1068,10 @@ void GList::setNumItems(int value)
 {
     if (_virtual)
     {
-        AXASSERT(itemRenderer != nullptr, "FairyGUI: Set itemRenderer first!");
+        if (itemRenderer == nullptr) {
+            AXASSERT(itemRenderer != nullptr, "FairyGUI: Set itemRenderer first!");
+            return;
+        }
 
         _numItems = value;
         if (_loop)
@@ -1164,6 +1185,10 @@ void GList::setVirtualListChangedFlag(bool layoutChanged)
 
 void GList::doRefreshVirtualList()
 {
+    if (itemRenderer == nullptr) {
+        return;
+    }
+
     bool layoutChanged = _virtualListChanged == 2;
     _virtualListChanged = 0;
     _eventLocked = true;

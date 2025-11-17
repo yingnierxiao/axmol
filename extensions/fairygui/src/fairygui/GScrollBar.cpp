@@ -31,6 +31,10 @@ void GScrollBar::setScrollPane(ScrollPane* target, bool vertical)
 
 void GScrollBar::setDisplayPerc(float value)
 {
+    if (_grip == nullptr || _bar == nullptr) {
+        return;
+    }
+
     if (_vertical)
     {
         if (!_fixedGripSize)
@@ -50,6 +54,10 @@ void GScrollBar::setDisplayPerc(float value)
 void GScrollBar::setScrollPerc(float value)
 {
     _scrollPerc = value;
+    if (_grip == nullptr || _bar == nullptr) {
+        return;
+    }
+
     if (_vertical)
         _grip->setY(round(_bar->getY() + (_bar->getHeight() - _grip->getHeight()) * _scrollPerc));
     else
@@ -71,9 +79,15 @@ void GScrollBar::constructExtension(ByteBuffer* buffer)
     _fixedGripSize = buffer->readBool();
 
     _grip = getChild("grip");
-    AXASSERT(_grip != nullptr, "FairyGUI: should define grip");
+    if (_grip == nullptr) {
+        AXASSERT(_grip != nullptr, "FairyGUI: should define grip");
+        return;
+    }
     _bar = getChild("bar");
-    AXASSERT(_bar != nullptr, "FairyGUI: should define bar");
+    if (_bar == nullptr) {
+        AXASSERT(_bar != nullptr, "FairyGUI: should define bar");
+        return;
+    }
 
     _arrowButton1 = getChild("arrow1");
     _arrowButton2 = getChild("arrow2");
@@ -92,6 +106,10 @@ void GScrollBar::constructExtension(ByteBuffer* buffer)
 
 void GScrollBar::onTouchBegin(EventContext* context)
 {
+    if (_grip == nullptr) {
+        return;
+    }
+
     context->stopPropagation();
 
     InputEvent* evt = context->getInput();
@@ -114,8 +132,9 @@ void GScrollBar::onTouchBegin(EventContext* context)
 
 void GScrollBar::onGripTouchBegin(EventContext* context)
 {
-    if (_bar == nullptr)
+    if (_grip == nullptr || _bar == nullptr) {
         return;
+    }
 
     context->stopPropagation();
     context->captureTouch();
@@ -128,6 +147,10 @@ void GScrollBar::onGripTouchBegin(EventContext* context)
 
 void GScrollBar::onGripTouchMove(EventContext* context)
 {
+    if (_grip == nullptr || _bar == nullptr) {
+        return;
+    }
+
     Vec2 pt = globalToLocal(context->getInput()->getPosition());
 
     if (_vertical)

@@ -418,8 +418,9 @@ void GButton::onTouchEnd(EventContext* context)
 
 void GButton::onClick(EventContext* context)
 {
-    if (!_sound.empty())
+    if (!_sound.empty() && UIRoot != nullptr) {
         UIRoot->playSound(_sound, _soundVolumeScale);
+    }
 
     if (_mode == ButtonMode::CHECK)
     {
@@ -449,5 +450,7 @@ void GButton::onExit(EventContext* context)
     if (_over)
         onRollOut(context);
 }
+
+//TODO LongTouch
 
 NS_FGUI_END

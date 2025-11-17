@@ -194,13 +194,20 @@ void GComboBox::updateDropdownList()
 
 void GComboBox::showDropdown()
 {
+    //TODO zj
+    /*UIRoot* pRoot = getRoot();
+    if (!pRoot)
+        return;*/
+    
     updateDropdownList();
     if (_list->getSelectionMode() == ListSelectionMode::SINGLE)
         _list->setSelectedIndex(-1);
     _dropdown->setWidth(_size.width);
     _list->ensureBoundsCorrect();
 
-    UIRoot->togglePopup(_dropdown, this, popupDirection);
+    if (UIRoot != nullptr) {
+        UIRoot->togglePopup(_dropdown, this, popupDirection);
+    }
     if (_dropdown->getParent() != nullptr)
         setState(GButton::DOWN);
 }
@@ -307,12 +314,18 @@ void GComboBox::constructExtension(ByteBuffer* buffer)
     if (!dropdown.empty())
     {
         _dropdown = dynamic_cast<GComponent*>(UIPackage::createObjectFromURL(dropdown));
-        AXASSERT(_dropdown != nullptr, "FairyGUI: should be a component.");
+        if (_dropdown == nullptr) {
+            AXASSERT(_dropdown != nullptr, "FairyGUI: should be a component.");
+            return;
+        }
 
         _dropdown->retain();
 
         _list = dynamic_cast<GList*>(_dropdown->getChild("list"));
-        AXASSERT(_list != nullptr, "FairyGUI: should container a list component named list.");
+        if (_list == nullptr) {
+            AXASSERT(_list != nullptr, "FairyGUI: should container a list component named list.");
+            return;
+        }
 
         _list->addEventListener(UIEventType::ClickItem, AX_CALLBACK_1(GComboBox::onClickItem, this));
 

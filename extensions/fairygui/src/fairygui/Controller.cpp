@@ -25,7 +25,10 @@ void GController::setSelectedIndex(int value, bool triggerEvent)
 {
     if (_selectedIndex != value)
     {
-        AXASSERT(value < (int)_pageIds.size(), "Invalid selected index");
+        if (value >= (int)_pageIds.size()) {
+            AXASSERT(value < (int)_pageIds.size(), "Invalid selected index");
+            return;
+        }
 
         changing = true;
 
@@ -113,6 +116,9 @@ const std::string& GController::getPageNameById(const std::string& value) const
 
 const std::string& GController::getPageId(int index) const
 {
+    if (index < 0 || index >= (int)_pageIds.size()) {
+        return STD_STRING_EMPTY;
+    }
     return _pageIds[index];
 }
 

@@ -111,6 +111,9 @@ void Window::setDragArea(GObject * value)
 
 void Window::show()
 {
+    if (UIRoot == nullptr) {
+        return;
+    }
     UIRoot->showWindow(this);
 }
 
@@ -122,6 +125,9 @@ void Window::hide()
 
 void Window::hideImmediately()
 {
+    if (UIRoot == nullptr) {
+        return;
+    }
     UIRoot->hideWindowImmediately(this);
 }
 
@@ -135,6 +141,9 @@ void Window::toggleStatus()
 
 void Window::bringToFront()
 {
+    if (UIRoot == nullptr) {
+        return;
+    }
     UIRoot->bringToFront(this);
 }
 

@@ -66,7 +66,10 @@ GObject* GComponent::addChild(GObject* child)
 
 GObject* GComponent::addChildAt(GObject* child, int index)
 {
-    AXASSERT(child != nullptr, "Argument must be non-nil");
+    if (child == nullptr) {
+        AXASSERT(child != nullptr, "Argument must be non-nil");
+        return nullptr;
+    }
 
     if (child->_parent == this)
     {
@@ -121,7 +124,10 @@ int GComponent::getInsertPosForSortingChild(GObject* target)
 
 void GComponent::removeChild(GObject* child)
 {
-    AXASSERT(child != nullptr, "Argument must be non-nil");
+    if (child == nullptr) {
+        AXASSERT(child != nullptr, "Argument must be non-nil");
+        return;
+    }
 
     int childIndex = (int)_children.getIndex(child);
     if (childIndex != -1)
@@ -130,7 +136,10 @@ void GComponent::removeChild(GObject* child)
 
 void GComponent::removeChildAt(int index)
 {
-    AXASSERT(index >= 0 && index < _children.size(), "Invalid child index");
+    if (index < 0 || index >= _children.size()) {
+        AXASSERT(index >= 0 && index < _children.size(), "Invalid child index");
+        return;
+    }
 
     GObject* child = _children.at(index);
 
@@ -162,7 +171,10 @@ void GComponent::removeChildren(int beginIndex, int endIndex)
 
 GObject* GComponent::getChildAt(int index) const
 {
-    AXASSERT(index >= 0 && index < _children.size(), "Invalid child index");
+    if (index < 0 || index >= _children.size()) {
+        AXASSERT(index >= 0 && index < _children.size(), "Invalid child index");
+        return nullptr;
+    }
 
     return _children.at(index);
 }
@@ -235,14 +247,20 @@ GObject* GComponent::getChildById(const std::string& id) const
 
 int GComponent::getChildIndex(const GObject* child) const
 {
-    AXASSERT(child != nullptr, "Argument must be non-nil");
+    if (child == nullptr) {
+        AXASSERT(child != nullptr, "Argument must be non-nil");
+        return -1;
+    }
 
     return (int)_children.getIndex((GObject*)child);
 }
 
 void GComponent::setChildIndex(GObject* child, int index)
 {
-    AXASSERT(child != nullptr, "Argument must be non-nil");
+    if (child == nullptr) {
+        AXASSERT(child != nullptr, "Argument must be non-nil");
+        return;
+    }
 
     int oldIndex = (int)_children.getIndex(child);
     AXASSERT(oldIndex != -1, "Not a child of this container");
@@ -262,7 +280,10 @@ void GComponent::setChildIndex(GObject* child, int index)
 
 int GComponent::setChildIndexBefore(GObject* child, int index)
 {
-    AXASSERT(child != nullptr, "Argument must be non-nil");
+    if (child == nullptr) {
+        AXASSERT(child != nullptr, "Argument must be non-nil");
+        return -1;
+    }
 
     int oldIndex = (int)_children.getIndex(child);
     AXASSERT(oldIndex != -1, "Not a child of this container");
@@ -335,8 +356,14 @@ int GComponent::moveChild(GObject* child, int oldIndex, int index)
 
 void GComponent::swapChildren(GObject* child1, GObject* child2)
 {
-    AXASSERT(child1 != nullptr, "Argument1 must be non-nil");
-    AXASSERT(child2 != nullptr, "Argument2 must be non-nil");
+    if (child1 == nullptr) {
+        AXASSERT(child1 != nullptr, "Argument1 must be non-nil");
+        return;
+    }
+    if (child2 == nullptr) {
+        AXASSERT(child2 != nullptr, "Argument2 must be non-nil");
+        return;
+    }
 
     int index1 = (int)_children.getIndex(child1);
     int index2 = (int)_children.getIndex(child2);
@@ -417,21 +444,30 @@ GController* GComponent::getController(const std::string& name) const
 
 void GComponent::addController(GController* c)
 {
-    AXASSERT(c != nullptr, "Argument must be non-nil");
+    if (c == nullptr) {
+        AXASSERT(c != nullptr, "Argument must be non-nil");
+        return;
+    }
 
     _controllers.pushBack(c);
 }
 
 GController* GComponent::getControllerAt(int index) const
 {
-    AXASSERT(index >= 0 && index < _controllers.size(), "Invalid controller index");
+    if (index < 0 || index >= _controllers.size()) {
+        AXASSERT(index >= 0 && index < _controllers.size(), "Invalid controller index");
+        return nullptr;
+    }
 
     return _controllers.at(index);
 }
 
 void GComponent::removeController(GController* c)
 {
-    AXASSERT(c != nullptr, "Argument must be non-nil");
+    if (c == nullptr) {
+        AXASSERT(c != nullptr, "Argument must be non-nil");
+        return;
+    }
 
     ssize_t index = _controllers.getIndex(c);
     AXASSERT(index != -1, "controller not exists");
@@ -473,7 +509,10 @@ Transition* GComponent::getTransition(const std::string& name) const
 
 Transition* GComponent::getTransitionAt(int index) const
 {
-    AXASSERT(index >= 0 && index < _transitions.size(), "Invalid transition index");
+    if (index < 0 || index >= _transitions.size()) {
+        AXASSERT(index >= 0 && index < _transitions.size(), "Invalid transition index");
+        return nullptr;
+    }
 
     return _transitions.at(index);
 }
@@ -1132,6 +1171,10 @@ void GComponent::constructFromResource()
 void GComponent::constructFromResource(std::vector<GObject*>* objectPool, int poolIndex)
 {
     PackageItem* contentItem = _packageItem->getBranch();
+    if (contentItem == nullptr) {
+        AXLOGW("FairyGUI: getBranch() returned nullptr in GComponent::constructFromResource");
+        return;
+    }
 
     if (!contentItem->translated)
     {
@@ -1240,10 +1283,18 @@ void GComponent::constructFromResource(std::vector<GObject*>* objectPool, int po
             if (pi != nullptr)
             {
                 child = UIObjectFactory::newObject(pi);
-                child->constructFromResource();
+                if (child != nullptr) {
+                    child->constructFromResource();
+                }
             }
             else
                 child = UIObjectFactory::newObject(type);
+        }
+
+        if (child == nullptr) {
+            AXLOGW("FairyGUI: UIObjectFactory::newObject returned nullptr in GComponent::constructFromResource");
+            buffer->setPos(curPos + dataLen);
+            continue;
         }
 
         child->_underConstruct = true;

@@ -147,6 +147,10 @@ void GMovieClip::setProp(ObjectPropID propId, const ax::Value& value)
 void GMovieClip::constructFromResource()
 {
     PackageItem* contentItem = _packageItem->getBranch();
+    if (contentItem == nullptr) {
+        AXLOGW("FairyGUI: getBranch() returned nullptr in GMovieClip::constructFromResource");
+        return;
+    }
     sourceSize.width = contentItem->width;
     sourceSize.height = contentItem->height;
     initSize = sourceSize;

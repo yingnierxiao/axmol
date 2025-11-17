@@ -23,7 +23,10 @@ void Relations::add(GObject * target, RelationType relationType)
 
 void Relations::add(GObject * target, RelationType relationType, bool usePercent)
 {
-    AXASSERT(target, "target is null");
+    if (target == nullptr) {
+        AXASSERT(target, "target is null");
+        return;
+    }
 
     for (auto it = _items.begin(); it != _items.end(); ++it)
     {

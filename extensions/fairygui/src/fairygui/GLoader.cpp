@@ -361,6 +361,10 @@ void GLoader::loadFromPackage()
     if (_contentItem != nullptr)
     {
         _contentItem = _contentItem->getBranch();
+        if (_contentItem == nullptr) {
+            AXLOGW("FairyGUI: getBranch() returned nullptr in GLoader::loadFromPackage");
+            return;
+        }
         sourceSize.width = _contentItem->width;
         sourceSize.height = _contentItem->height;
         _contentItem = _contentItem->getHighResolution();

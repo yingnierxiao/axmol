@@ -1343,8 +1343,9 @@ void Transition::applyValue(TransitionItem* item)
         if (_playing && item->time >= _startTime)
         {
             TValue_Sound* value = (TValue_Sound*)item->value;
-            if (!value->sound.empty())
+            if (!value->sound.empty() && UIRoot != nullptr) {
                 UIRoot->playSound(value->sound, value->volume);
+            }
             break;
         }
 

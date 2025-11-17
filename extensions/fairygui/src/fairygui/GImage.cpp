@@ -150,6 +150,10 @@ void GImage::setProp(ObjectPropID propId, const ax::Value& value)
 void GImage::constructFromResource()
 {
     PackageItem* contentItem = _packageItem->getBranch();
+    if (contentItem == nullptr) {
+        AXLOGW("FairyGUI: getBranch() returned nullptr in GImage::constructFromResource");
+        return;
+    }
     sourceSize.width         = contentItem->width;
     sourceSize.height        = contentItem->height;
     initSize                 = sourceSize;

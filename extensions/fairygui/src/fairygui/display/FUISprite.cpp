@@ -346,13 +346,16 @@ void FUISprite::updateRadial(void)
         triangleCount = _vertexDataCount - 2;
         _vertexData = (V3F_C4B_T2F*)malloc(_vertexDataCount * sizeof(*_vertexData));
         _vertexIndex = (unsigned short *)malloc(triangleCount * 3 * sizeof(*_vertexIndex));
-        AXASSERT(_vertexData, "FUISprite. Not enough memory");
+        if (_vertexData == nullptr) {
+            AXASSERT(_vertexData, "FUISprite. Not enough memory");
+            return;
+        }
     }
     else
     {
         triangleCount = _vertexDataCount - 2;
     }
-    
+
     updateColor();
 
     if (!sameIndexCount)
@@ -435,7 +438,10 @@ void FUISprite::updateBar(void)
         _vertexDataCount = 4;
         _vertexData = (V3F_C4B_T2F*)malloc(_vertexDataCount * sizeof(*_vertexData));
         _vertexIndex = (unsigned short*)malloc(6 * sizeof(*_vertexIndex));
-        AXASSERT(_vertexData, "FUISprite. Not enough memory");
+        if (_vertexData == nullptr) {
+            AXASSERT(_vertexData, "FUISprite. Not enough memory");
+            return;
+        }
     }
     //    TOPLEFT
     _vertexData[0].texCoords = textureCoordFromAlphaPoint(Vec2(min.x, max.y));

@@ -252,7 +252,9 @@ void GObject::center(bool restraint /*= false*/)
 
 void GObject::makeFullScreen()
 {
-    setSize(UIRoot->getWidth(), UIRoot->getHeight());
+    if (UIRoot != nullptr) {
+        setSize(UIRoot->getWidth(), UIRoot->getHeight());
+    }
 }
 
 void GObject::setPivot(float xv, float yv, bool asAnchor)
@@ -471,7 +473,10 @@ Vec2 GObject::localToGlobal(const Vec2& pt)
     }
     pt2.y = _size.height - pt2.y;
     pt2 = _displayObject->convertToWorldSpace(pt2);
-    return UIRoot->worldToRoot(pt2);
+    if (UIRoot != nullptr) {
+        return UIRoot->worldToRoot(pt2);
+    }
+    return pt2;
 }
 
 ax::Rect GObject::localToGlobal(const ax::Rect& rect)
@@ -488,7 +493,7 @@ ax::Rect GObject::localToGlobal(const ax::Rect& rect)
 
 Vec2 GObject::globalToLocal(const Vec2& pt)
 {
-    Vec2 pt2 = UIRoot->rootToWorld(pt);
+    Vec2 pt2 = (UIRoot != nullptr) ? UIRoot->rootToWorld(pt) : pt;
     pt2 = _displayObject->convertToNodeSpace(pt2);
     pt2.y = _size.height - pt2.y;
     if (_pivotAsAnchor)
@@ -935,6 +940,10 @@ void GObject::initDrag()
 
 void GObject::dragBegin(int touchId)
 {
+    if (UIRoot == nullptr) {
+        return;
+    }
+
     if (_draggingObject != nullptr)
     {
         GObject* tmp = _draggingObject;
@@ -995,7 +1004,7 @@ void GObject::onTouchMove(EventContext* context)
         float xx = evt->getPosition().x - sGlobalDragStart.x + sGlobalRect.origin.x;
         float yy = evt->getPosition().y - sGlobalDragStart.y + sGlobalRect.origin.y;
 
-        if (_dragBounds != nullptr)
+        if (_dragBounds != nullptr && UIRoot != nullptr)
         {
             Rect rect = UIRoot->localToGlobal(*_dragBounds);
             if (xx < rect.origin.x)
