@@ -5,6 +5,12 @@
 #include "FairyGUIMacros.h"
 #include "GObject.h"
 
+// Forward declaration for Effekseer
+namespace efk {
+    class EffectEmitter;
+    class EffectManager;
+}
+
 NS_FGUI_BEGIN
 
 class GComponent;
@@ -51,6 +57,22 @@ public:
     int getFrame() const;
     void setFrame(int value);
 
+    // Effekseer effect control methods
+    void setEffectSpeed(float speed);
+    float getEffectSpeed() const;
+
+    void setEffectColor(const ax::Color32& color);
+
+    void setEffectTargetPosition(const ax::Vec3& position);
+
+    void setEffectDynamicInput(int index, float value);
+    float getEffectDynamicInput(int index) const;
+
+    void stopEffect();
+    void stopEffectRoot();
+
+    bool isEffectPlaying() const;
+
     FillMethod getFillMethod() const;
     void setFillMethod(FillMethod value);
 
@@ -83,6 +105,7 @@ protected:
 private:
     void loadContent();
     void loadFromPackage();
+    void loadEffect();
     void clearContent();
     void updateLayout();
     void setErrorState();
@@ -103,6 +126,7 @@ private:
     FUISprite* _content;
     GComponent* _content2;
     ActionMovieClip* _playAction;
+    efk::EffectEmitter* _effectEmitter;
 };
 
 NS_FGUI_END

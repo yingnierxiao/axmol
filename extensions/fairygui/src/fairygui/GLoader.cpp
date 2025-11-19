@@ -6,6 +6,10 @@
 #include "utils/ByteBuffer.h"
 #include "utils/ToolSet.h"
 
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+#include "Effekseer/EffekseerForCocos2d-x/EffekseerForCocos2d-x.h"
+#endif
+
 NS_FGUI_BEGIN
 using namespace ax;
 
@@ -21,6 +25,7 @@ GLoader::GLoader()
     _content(nullptr),
     _content2(nullptr),
     _playAction(nullptr),
+    _effectEmitter(nullptr),
     _playing(true),
     _frame(0)
 {
@@ -31,6 +36,13 @@ GLoader::~GLoader()
     AX_SAFE_RELEASE(_playAction);
     AX_SAFE_RELEASE(_content);
     AX_SAFE_RELEASE(_content2);
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->removeFromParent();
+        _effectEmitter = nullptr;
+    }
+#endif
 }
 
 void GLoader::handleInit()
@@ -130,6 +142,17 @@ void GLoader::setPlaying(bool value)
             else
                 _content->stopAction(_playAction);
         }
+
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+        if (_effectEmitter != nullptr)
+        {
+            if (_playing)
+                _effectEmitter->play();
+            else
+                _effectEmitter->stop();
+        }
+#endif
+
         updateGear(5);
     }
 }
@@ -199,6 +222,11 @@ void GLoader::loadContent()
 
     if (_url.compare(0, 5, "ui://") == 0)
         loadFromPackage();
+    else if (_url.compare(0, 9, "effect://") == 0)
+    {
+        _contentStatus = 5; // Effect content status
+        loadEffect();
+    }
     else
     {
         _contentStatus = 3;
@@ -276,6 +304,72 @@ void GLoader::loadFromPackage()
         setErrorState();
 }
 
+void GLoader::loadEffect()
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    // Extract effect file path from effect:// URL
+    // Format: effect://path/to/effect.efkefc
+    std::string effectPath = _url.substr(9); // Remove "effect://" prefix
+
+    AXLOGI("GLoader: Loading Effekseer effect: %s", effectPath.c_str());
+
+    // Get the global EffectManager (assuming it's set up in the scene)
+    // You may need to adjust this to get the manager from your scene
+    auto scene = Director::getInstance()->getRunningScene();
+    if (!scene)
+    {
+        AXLOGE("GLoader: No running scene to get EffectManager");
+        setErrorState();
+        return;
+    }
+
+    // Try to find EffectManager in the scene
+    // This assumes you have a global EffectManager set up
+    efk::EffectManager* manager = nullptr;
+
+    // Option 1: Get from scene's user data or child node
+    auto child = scene->getChildByName("EffectManager");
+    if (child)
+    {
+        manager = dynamic_cast<efk::EffectManager*>(child);
+    }
+
+    if (!manager)
+    {
+        AXLOGE("GLoader: EffectManager not found in scene");
+        setErrorState();
+        return;
+    }
+
+    // Create effect emitter
+    _effectEmitter = efk::EffectEmitter::create(manager, effectPath);
+
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->setPlayOnEnter(true);
+        _effectEmitter->setIsLooping(_playing);
+        _effectEmitter->setRemoveOnStop(false);
+
+        _displayObject->addChild(_effectEmitter);
+
+        // Set source size for layout
+        sourceSize = Size(100, 100); // Default size for effects
+
+        updateLayout();
+
+        AXLOGI("GLoader: Effekseer effect loaded successfully");
+    }
+    else
+    {
+        AXLOGE("GLoader: Failed to create Effekseer effect: %s", effectPath.c_str());
+        setErrorState();
+    }
+#else
+    AXLOGE("GLoader: Effekseer extension is not enabled");
+    setErrorState();
+#endif
+}
+
 void GLoader::loadExternal()
 {
     auto tex = Director::getInstance()->getTextureCache()->addImage(_url);
@@ -323,6 +417,16 @@ void GLoader::clearContent()
         _displayObject->removeChild(_content2->displayObject());
         AX_SAFE_RELEASE_NULL(_content2);
     }
+
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_contentStatus == 5 && _effectEmitter != nullptr)
+    {
+        _effectEmitter->stop();
+        _effectEmitter->removeFromParent();
+        _effectEmitter = nullptr;
+    }
+#endif
+
     ((FUISprite*)_content)->clearContent();
 
     _contentItem = nullptr;
@@ -598,6 +702,99 @@ GObject* GLoader::hitTest(const Vec2& worldPoint, const Camera* camera)
         return this;
     else
         return nullptr;
+}
+
+void GLoader::setEffectSpeed(float speed)
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->setSpeed(speed);
+    }
+#endif
+}
+
+float GLoader::getEffectSpeed() const
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        return _effectEmitter->getSpeed();
+    }
+#endif
+    return 1.0f;
+}
+
+void GLoader::setEffectColor(const ax::Color32& color)
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->setColor(color);
+    }
+#endif
+}
+
+void GLoader::setEffectTargetPosition(const ax::Vec3& position)
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->setTargetPosition(position);
+    }
+#endif
+}
+
+void GLoader::setEffectDynamicInput(int index, float value)
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->setDynamicInput(index, value);
+    }
+#endif
+}
+
+float GLoader::getEffectDynamicInput(int index) const
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        return _effectEmitter->getDynamicInput(index);
+    }
+#endif
+    return 0.0f;
+}
+
+void GLoader::stopEffect()
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->stop();
+    }
+#endif
+}
+
+void GLoader::stopEffectRoot()
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        _effectEmitter->stopRoot();
+    }
+#endif
+}
+
+bool GLoader::isEffectPlaying() const
+{
+#ifdef AX_ENABLE_EXT_EFFEKSEER
+    if (_effectEmitter != nullptr)
+    {
+        return _effectEmitter->isPlaying();
+    }
+#endif
+    return false;
 }
 
 NS_FGUI_END
