@@ -237,7 +237,7 @@ endif()
 
 if(AX_ENABLE_AUDIO)
   # The openal-soft(LGPL 2.1)
-  if(AX_USE_ALSOFT)
+  if(NOT EMSCRIPTEN)
     set(alsoft_opts
       "ALSOFT_DLOPEN OFF"
       "ALSOFT_UTILS OFF"
@@ -289,7 +289,6 @@ if(AX_ENABLE_AUDIO)
 
     ax_add_3rd(openal EXCLUDE_FROM_ALL TARGETS OpenAL;alsoft.common OPTIONS ${alsoft_opts})
 
-    target_compile_definitions(3rdparty INTERFACE AX_USE_ALSOFT=1)
     set_target_properties(OpenAL alsoft.common PROPERTIES CXX_STANDARD ${_AX_CXX_STD})
 
     if(AX_USE_ALSOFT_STATIC)
@@ -310,7 +309,9 @@ if(AX_ENABLE_AUDIO)
 endif()
 
 if(WINDOWS OR LINUX OR ANDROID OR WASM)
-  ax_add_3rd(glad)
+  if(AX_RENDER_API STREQUAL "gl" OR AX_RENDER_API STREQUAL "vk")
+    ax_add_3rd(glad)
+  endif()
 endif()
 
 if((WINDOWS AND NOT WINRT) OR MACOSX OR LINUX)

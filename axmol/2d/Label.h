@@ -54,9 +54,9 @@ typedef struct _ttfConfig
     std::string customGlyphs;
 
     GlyphCollection glyphs;
-    float fontSize;  // The desired render font size
-    int faceSize;    // The original face size of font, used when distanceFieldEnabled == true
-    int outlineSize; // The Outline width used in non‑SDF rendering; ignored when distance field is enabled
+    float fontSize;   // The desired render font size
+    int faceSize;     // The original face size of font, used when distanceFieldEnabled == true
+    int outlineSize;  // The Outline width used in non‑SDF rendering; ignored when distance field is enabled
 
     bool distanceFieldEnabled;
     bool italics;
@@ -68,7 +68,7 @@ typedef struct _ttfConfig
                float size                             = AX_DEFAULT_FONT_LABEL_SIZE,
                const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
                const char* customGlyphCollection      = nullptr, /* nullable */
-               bool useDistanceField                  = FontFreeType::isShareDistanceFieldEnabled(),
+               bool useDistanceField                  = FontFreeType::isGlobalSDFEnabled(),
                int outline                            = 0,
                bool useItalics                        = false,
                bool useBold                           = false,
@@ -736,7 +736,7 @@ protected:
         std::array<CustomCommand*, 3> getCommandArray();
 
         CustomCommand textCommand;
-        CustomCommand effectCommand; // effect: outline or glow 
+        CustomCommand effectCommand;  // effect: outline or glow
         CustomCommand shadowCommand;
     };
 
@@ -918,7 +918,6 @@ protected:
     rhi::UniformLocation _effectColorLocation;
     rhi::UniformLocation _effectWidthLocation;
     rhi::UniformLocation _passLocation;
-    rhi::UniformLocation _distanceSpreadLocation;
 
 private:
     AX_DISALLOW_COPY_AND_ASSIGN(Label);

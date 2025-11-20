@@ -61,7 +61,6 @@ function(ax_link_cxx_prebuilt APP_NAME AX_ROOT_DIR AX_PREBUILT_DIR)
     target_compile_definitions(${APP_NAME} PRIVATE AX_GLES_PROFILE=0)
   endif()
 
-  ax_config_pred(${APP_NAME} AX_USE_ALSOFT)
   ax_config_pred(${APP_NAME} AX_ENABLE_MSEDGE_WEBVIEW2)
   ax_config_pred(${APP_NAME} AX_ENABLE_PHYSICS)
   ax_config_pred(${APP_NAME} AX_ENABLE_3D)
@@ -149,7 +148,6 @@ function(ax_link_cxx_prebuilt APP_NAME AX_ROOT_DIR AX_PREBUILT_DIR)
     poly2tri
     astcenc
     ogg
-    glad
     glfw
     png
     unzip
@@ -158,6 +156,10 @@ function(ax_link_cxx_prebuilt APP_NAME AX_ROOT_DIR AX_PREBUILT_DIR)
     yasio
     websocket-parser
   )
+
+  if(AX_RENDER_API STREQUAL "gl" OR AX_RENDER_API STREQUAL "vk")
+    list(APPEND LIBS glad)
+  endif()
 
   if(AX_ENABLE_OPUS)
     list(APPEND LIBS opus)

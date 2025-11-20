@@ -742,13 +742,12 @@ void Label::updateBatchCommand(Label::BatchCommand& batch)
 
 void Label::updateUniformLocations()
 {
-    _mvpMatrixLocation      = _programState->getUniformLocation(rhi::Uniform::MVP_MATRIX);
-    _textureLocation        = _programState->getUniformLocation(rhi::Uniform::TEXTURE);
-    _textColorLocation      = _programState->getUniformLocation(rhi::Uniform::TEXT_COLOR);
-    _effectColorLocation    = _programState->getUniformLocation(rhi::Uniform::EFFECT_COLOR);
-    _effectWidthLocation    = _programState->getUniformLocation(rhi::Uniform::EFFECT_WIDTH);
-    _passLocation           = _programState->getUniformLocation(rhi::Uniform::LABEL_PASS);
-    _distanceSpreadLocation = _programState->getUniformLocation(rhi::Uniform::DISTANCE_SPREAD);
+    _mvpMatrixLocation   = _programState->getUniformLocation(rhi::Uniform::MVP_MATRIX);
+    _textureLocation     = _programState->getUniformLocation(rhi::Uniform::TEXTURE);
+    _textColorLocation   = _programState->getUniformLocation(rhi::Uniform::TEXT_COLOR);
+    _effectColorLocation = _programState->getUniformLocation(rhi::Uniform::EFFECT_COLOR);
+    _effectWidthLocation = _programState->getUniformLocation(rhi::Uniform::EFFECT_WIDTH);
+    _passLocation        = _programState->getUniformLocation(rhi::Uniform::LABEL_PASS);
 }
 
 bool Label::setFontAtlas(FontAtlas* atlas, bool distanceFieldEnabled /* = false */, bool useA8Shader /* = false */)
@@ -1927,15 +1926,14 @@ void Label::updateEffectUniforms(BatchCommand& batch,
             {  // distance field
                 // outline pass
                 {
-                    pass               = 1;
-                    float outlineWidth = (_outlineSize > 0 ? _outlineSize : _fontConfig.outlineSize) *
-                                         _director->getContentScaleFactor();
-                    float distanceFieldSpread = FontFreeType::DistanceMapSpread * _director->getContentScaleFactor();
-                    auto effectPS             = batch.effectCommand.unsafePS();
+                    pass = 1;
+
+                    const float effectWidth =
+                        (_outlineSize > 0 ? _outlineSize : _fontConfig.outlineSize) / FontFreeType::DistanceMapSpread;
+                    auto effectPS = batch.effectCommand.unsafePS();
                     updateBuffer(textureAtlas, batch.effectCommand);
                     effectPS->setUniform(_effectColorLocation, &effectColor, sizeof(Vec4));
-                    effectPS->setUniform(_effectWidthLocation, &outlineWidth, sizeof(float));
-                    effectPS->setUniform(_distanceSpreadLocation, &distanceFieldSpread, sizeof(distanceFieldSpread));
+                    effectPS->setUniform(_effectWidthLocation, &effectWidth, sizeof(float));
                     effectPS->setUniform(_passLocation, &pass, sizeof(pass));
                     batch.effectCommand.init(_globalZOrder);
                     renderer->addCommand(&batch.effectCommand);
@@ -2002,14 +2000,12 @@ void Label::updateEffectUniforms(BatchCommand& batch,
 
             // glow pass
             {
-                pass                            = 1;
-                const float glowRadius          = _glowRadius * _director->getContentScaleFactor();
-                const float distanceFieldSpread = FontFreeType::DistanceMapSpread * _director->getContentScaleFactor();
+                pass                    = 1;
+                const float effectWidth = _glowRadius / FontFreeType::DistanceMapSpread;
                 updateBuffer(textureAtlas, batch.effectCommand);
                 auto effectPS = batch.effectCommand.unsafePS();
                 effectPS->setUniform(_effectColorLocation, &_effectColor, sizeof(Vec4));
-                effectPS->setUniform(_effectWidthLocation, &glowRadius, sizeof(float));
-                effectPS->setUniform(_distanceSpreadLocation, &distanceFieldSpread, sizeof(distanceFieldSpread));
+                effectPS->setUniform(_effectWidthLocation, &effectWidth, sizeof(float));
                 effectPS->setUniform(_passLocation, &pass, sizeof(pass));
                 batch.effectCommand.init(_globalZOrder);
                 renderer->addCommand(&batch.effectCommand);

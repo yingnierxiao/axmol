@@ -116,7 +116,7 @@ RenderTargetImpl::Attachment RenderTargetImpl::getColorAttachment(int index) con
                : RenderTargetImpl::Attachment{};
 }
 
-RenderTargetImpl::Attachment RenderTargetImpl::getDepthStencilAttachment(int index) const
+RenderTargetImpl::Attachment RenderTargetImpl::getDepthStencilAttachment() const
 {
     auto textureImpl =
         _defaultRenderTarget ? UtilsD3D::getDefaultColorAttachment() : static_cast<TextureImpl*>(_depthStencil.texture);

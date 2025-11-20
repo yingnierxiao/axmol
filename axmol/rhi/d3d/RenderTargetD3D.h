@@ -59,7 +59,7 @@ public:
     ID3D11DepthStencilView* getDSV() const { return _dsv; }
 
     Attachment getColorAttachment(int index) const;
-    Attachment getDepthStencilAttachment(int index) const;
+    Attachment getDepthStencilAttachment() const;
 
 private:
     ID3D11Device* _device = nullptr;

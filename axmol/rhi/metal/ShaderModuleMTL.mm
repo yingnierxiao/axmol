@@ -329,9 +329,6 @@ void ShaderModuleImpl::setBuiltinLocations()
 
     /// u_textPass
     _builtinUniforms[Uniform::LABEL_PASS] = getUniformInfo(UNIFORM_NAME_LABEL_PASS);
-
-    /// u_distanceSpread
-    _builtinUniforms[Uniform::DISTANCE_SPREAD] = getUniformInfo(UNIFORM_NAME_DISTANCE_SPREAD);
 }
 
 }  // namespace ax::rhi::mtl

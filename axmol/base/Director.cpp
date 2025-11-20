@@ -998,6 +998,9 @@ Scene* Director::popPreviousSceneOut()
 
 void Director::end()
 {
+    auto app = Application::getInstance();
+    if (app)
+        app->applicationWillQuit();
     _cleanupDirectorInNextLoop = true;
 }
 

@@ -410,13 +410,7 @@ static EventMouse::MouseButton checkMouseButton(GLFWwindow* window)
 }
 
 RenderViewImpl::RenderViewImpl(bool initglfw)
-    : _captured(false)
-    , _renderScale(1.0f)
-    , _windowZoomFactor(1.0f)
-    , _mainWindow(nullptr)
-    , _monitor(nullptr)
-    , _mouseX(0.0f)
-    , _mouseY(0.0f)
+    : _captured(false), _renderScale(1.0f), _windowZoomFactor(1.0f), _mainWindow(nullptr), _monitor(nullptr)
 {
     _viewName = "axmol3";
     g_keyCodeMap.clear();
@@ -1185,15 +1179,15 @@ void RenderViewImpl::onGLFWMouseCallBack(GLFWwindow* /*window*/, int button, int
 
     if (GLFW_PRESS == action)
     {
-        EventMouse event(EventMouse::MouseEventType::MOUSE_DOWN);
-        event.setMouseInfo(cursorX, cursorY, static_cast<ax::EventMouse::MouseButton>(button));
-        Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+        _currentMouseEvent.setMouseInfo(cursorX, cursorY, static_cast<ax::EventMouse::MouseButton>(button),
+                                        ax::EventMouse::MouseEventType::MOUSE_DOWN);
+        Director::getInstance()->getEventDispatcher()->dispatchEvent(&_currentMouseEvent);
     }
     else if (GLFW_RELEASE == action)
     {
-        EventMouse event(EventMouse::MouseEventType::MOUSE_UP);
-        event.setMouseInfo(cursorX, cursorY, static_cast<ax::EventMouse::MouseButton>(button));
-        Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+        _currentMouseEvent.setMouseInfo(cursorX, cursorY, static_cast<ax::EventMouse::MouseButton>(button),
+                                        ax::EventMouse::MouseEventType::MOUSE_UP);
+        Director::getInstance()->getEventDispatcher()->dispatchEvent(&_currentMouseEvent);
     }
 }
 
@@ -1217,11 +1211,9 @@ void RenderViewImpl::onGLFWMouseMoveCallBack(GLFWwindow* window, double x, doubl
     float cursorX = transformInputX(_mouseX);
     float cursorY = transformInputY(_mouseY);
 
-    EventMouse event(EventMouse::MouseEventType::MOUSE_MOVE);
-    // Set current button
-    EventMouse::MouseButton mouseButton{EventMouse::MouseButton::BUTTON_UNSET};
-    event.setMouseInfo(cursorX, cursorY, checkMouseButton(window));
-    Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+    _currentMouseEvent.setMouseInfo(cursorX, cursorY, checkMouseButton(window),
+                                    ax::EventMouse::MouseEventType::MOUSE_MOVE);
+    Director::getInstance()->getEventDispatcher()->dispatchEvent(&_currentMouseEvent);
 }
 
 #if defined(__EMSCRIPTEN__)
@@ -1328,12 +1320,12 @@ void RenderViewImpl::onGLFWMouseScrollCallback(GLFWwindow* window, double x, dou
     x *= _inputScale;
     y *= _inputScale;
 
-    EventMouse event(EventMouse::MouseEventType::MOUSE_SCROLL);
     float cursorX = transformInputX(_mouseX);
     float cursorY = transformInputY(_mouseY);
-    event.setScrollData((float)x, -(float)y);
-    event.setMouseInfo(cursorX, cursorY, checkMouseButton(window));
-    Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+    _currentMouseEvent.setScrollData((float)x, -(float)y);
+    _currentMouseEvent.setMouseInfo(cursorX, cursorY, checkMouseButton(window),
+                                    EventMouse::MouseEventType::MOUSE_SCROLL);
+    Director::getInstance()->getEventDispatcher()->dispatchEvent(&_currentMouseEvent);
 }
 
 void RenderViewImpl::onGLFWKeyCallback(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int /*mods*/)

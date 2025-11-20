@@ -38,9 +38,9 @@ AppDelegate::~AppDelegate() {}
 
 void AppDelegate::initContextAttrs()
 {
-    ContextAttrs gfxContextAttrs = {8, 8, 8, 8, 24, 8, 0};
+    ContextAttrs contextAttrs = {8, 8, 8, 8, 24, 8, 0};
 
-    setContextAttrs(gfxContextAttrs);
+    setContextAttrs(contextAttrs);
 }
 
 bool AppDelegate::applicationDidFinishLaunching()

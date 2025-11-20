@@ -52,16 +52,24 @@ public:
 
     /**
     @brief  Called when the application moves to the background
-    @param  the pointer of the application
     */
     void applicationDidEnterBackground() override;
 
     /**
     @brief  Called when the application reenters the foreground
-    @param  the pointer of the application
     */
     void applicationWillEnterForeground() override;
 
+    /**
+    @brief Called when application will quit
+    @since axmol-2.10.0
+    */
+    void applicationWillQuit() override;
+
+    /**
+    @brief Called when application screen size changed
+    @since axmol-3.0
+    */
     void applicationScreenSizeChanged(int newWidth, int newHeight) override;
 
 private:

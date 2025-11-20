@@ -76,7 +76,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     ax::setLogFmtFlag(ax::LogFmtFlag::Full);
 
     // whether enable global SDF font render support, since axmol-2.0.1
-    FontFreeType::setShareDistanceFieldEnabled(true);
+    FontFreeType::setGlobalSDFEnabled(true);
 
     // As an example, load config file
     // FIXME:: This should be loaded before the Director is initialized,
@@ -182,6 +182,11 @@ void AppDelegate::applicationWillEnterForeground()
     }
 
     Director::getInstance()->startAnimation();
+}
+
+void AppDelegate::applicationWillQuit()
+{
+    TestController::destroyInstance();
 }
 
 void AppDelegate::applicationScreenSizeChanged(int newWidth, int newHeight)

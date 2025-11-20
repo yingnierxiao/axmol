@@ -18,9 +18,6 @@
   - AX_ENABLE_VR: whether to enable generic VR renderer support, status: `experimental`, default: `FALSE`
   - AX_ENABLE_WAYLAND: whether to enable linux wayland, default: `FALSE`
 - AX_USE_XXX:
-  - AX_USE_ALSOFT: whether use openal-soft for all platforms
-    - Apple platform: Use openal-soft instead system deprecated: `OpenAL.framework`
-    - Other platforms: Always use openal-soft even this option not enabled
   - AX_USE_LUAJIT: whether use luajit, default: `FALSE`, use plainlua
 - AX_ENABLE_EXT_XXX for extensions
   - AX_ENABLE_EXT_GUI: the traditional GUI extension, default: `TRUE`

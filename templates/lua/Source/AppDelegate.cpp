@@ -119,3 +119,5 @@ void AppDelegate::applicationWillEnterForeground()
     AudioEngine::resumeAll();
 #endif
 }
+
+void AppDelegate::applicationWillQuit() {}

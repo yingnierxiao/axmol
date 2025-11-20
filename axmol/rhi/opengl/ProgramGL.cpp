@@ -183,9 +183,6 @@ void ProgramImpl::setBuiltinLocations()
 
     /// u_textPass
     _builtinUniformLocation[Uniform::LABEL_PASS] = getUniformLocation(UNIFORM_NAME_LABEL_PASS);
-
-    /// u_distanceSpread
-    _builtinUniformLocation[Uniform::DISTANCE_SPREAD] = getUniformLocation(UNIFORM_NAME_DISTANCE_SPREAD);
 }
 
 void ProgramImpl::reflectVertexInputs()
