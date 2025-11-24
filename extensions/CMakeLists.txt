@@ -147,6 +147,12 @@ if(AX_ENABLE_EXT_JSONDEFAULT)
   add_subdirectory(JSONDefault)
 endif()
 
+# .NET Scripting Extension
+if(AX_ENABLE_EXT_DOTNET)
+  message(STATUS "Adding .NET scripting extension")
+  add_subdirectory(scripting/dotnet-bindings)
+endif()
+
 # Disable -fPIC flag for other libs...
 if(BUILD_SHARED_LIBS AND UNIX AND NOT ANDROID)
   set(CMAKE_POSITION_INDEPENDENT_CODE OFF)

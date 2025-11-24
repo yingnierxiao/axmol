@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Axmol.Scripting/1.0.0": {
+        "runtime": {
+          "Axmol.Scripting.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Axmol.Scripting/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -34,6 +34,10 @@
 namespace ax
 {
 
+namespace backend {
+    class VertexLayout;
+}
+
 class MeshIndexData;
 class VertexAttribValue;
 

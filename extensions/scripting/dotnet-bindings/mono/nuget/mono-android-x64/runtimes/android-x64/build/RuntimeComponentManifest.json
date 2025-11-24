@@ -1,0 +1,19 @@
+{
+    "items": {
+        "_MonoRuntimeComponentLinking": [
+            { "identity": "dynamic", "RuntimeIdentifier": "android-x64" },
+        ],
+        "_MonoRuntimeComponentSharedLibExt": [
+            { "identity": ".so", "RuntimeIdentifier": "android-x64" },
+        ],
+        "_MonoRuntimeComponentStaticLibExt": [
+            { "identity": ".a", "RuntimeIdentifier": "android-x64" },
+        ],
+        "_MonoRuntimeAvailableComponents": [
+            { "identity": "debugger", "RuntimeIdentifier": "android-x64" },
+{ "identity": "hot_reload", "RuntimeIdentifier": "android-x64" },
+{ "identity": "diagnostics_tracing", "RuntimeIdentifier": "android-x64" },
+{ "identity": "marshal-ilgen", "RuntimeIdentifier": "android-x64" },
+        ],
+    }
+}

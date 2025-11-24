@@ -1,0 +1,19 @@
+{
+    "items": {
+        "_MonoRuntimeComponentLinking": [
+            { "identity": "static", "RuntimeIdentifier": "ios-arm64" },
+        ],
+        "_MonoRuntimeComponentSharedLibExt": [
+            { "identity": ".dylib", "RuntimeIdentifier": "ios-arm64" },
+        ],
+        "_MonoRuntimeComponentStaticLibExt": [
+            { "identity": ".a", "RuntimeIdentifier": "ios-arm64" },
+        ],
+        "_MonoRuntimeAvailableComponents": [
+            { "identity": "debugger", "RuntimeIdentifier": "ios-arm64" },
+{ "identity": "hot_reload", "RuntimeIdentifier": "ios-arm64" },
+{ "identity": "diagnostics_tracing", "RuntimeIdentifier": "ios-arm64" },
+{ "identity": "marshal-ilgen", "RuntimeIdentifier": "ios-arm64" },
+        ],
+    }
+}

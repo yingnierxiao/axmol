@@ -71,6 +71,8 @@ target("poly2tri")
     set_kind("static")
     add_files("3rdparty/poly2tri/**/*.cc")
     add_includedirs("3rdparty/poly2tri", {public = true})
+    -- 禁用 DLL 导入，使用静态链接
+    add_defines("P2T_STATIC_EXPORTS", {public = true})
 target_end()
 
 -- pugixml XML 解析器
@@ -78,6 +80,14 @@ target("pugixml")
     set_kind("static")
     add_files("3rdparty/pugixml/*.cpp")
     add_includedirs("3rdparty/pugixml", {public = true})
+target_end()
+
+-- astcenc ASTC 纹理解码器
+target("astcenc")
+    set_kind("static")
+    add_files("3rdparty/astcenc/astcenc_*.cpp")
+    add_includedirs("3rdparty/astcenc", {public = true})
+    add_defines("ASTCENC_DECOMPRESS_ONLY=1", {public = true})
 target_end()
 
 -- simdjson JSON 解析器
@@ -238,6 +248,7 @@ target("freetype")
         "3rdparty/freetype/src/base/ftinit.c",
         "3rdparty/freetype/src/base/ftsystem.c",
         "3rdparty/freetype/src/base/ftdebug.c",
+        "3rdparty/freetype/src/base/ftstroke.c",    -- 描边支持
 
         -- AutoFit 模块（自动hinting）
         "3rdparty/freetype/src/autofit/autofit.c",
@@ -245,26 +256,41 @@ target("freetype")
         -- Rasterizers（光栅化）
         "3rdparty/freetype/src/raster/raster.c",
         "3rdparty/freetype/src/smooth/smooth.c",
+        "3rdparty/freetype/src/sdf/sdf.c",           -- SDF 渲染器
 
-        -- Font Drivers（字体驱动，只选择常用的）
+        -- Font Drivers（字体驱动）
         "3rdparty/freetype/src/truetype/truetype.c", -- TrueType
         "3rdparty/freetype/src/cff/cff.c",           -- CFF/OpenType
         "3rdparty/freetype/src/sfnt/sfnt.c",         -- SFNT (TrueType/OpenType container)
+        "3rdparty/freetype/src/type1/type1.c",       -- Type 1
+        "3rdparty/freetype/src/cid/type1cid.c",      -- CID-keyed Type 1
+        "3rdparty/freetype/src/pfr/pfr.c",           -- PFR
+        "3rdparty/freetype/src/type42/type42.c",     -- Type 42
+        "3rdparty/freetype/src/winfonts/winfnt.c",   -- Windows FNT
+        "3rdparty/freetype/src/pcf/pcf.c",           -- PCF
+        "3rdparty/freetype/src/bdf/bdf.c",           -- BDF
+
+        -- Hinting modules
+        "3rdparty/freetype/src/pshinter/pshinter.c", -- PostScript hinter
 
         -- Auxiliary modules（辅助模块）
         "3rdparty/freetype/src/psaux/psaux.c",
-        "3rdparty/freetype/src/psnames/psnames.c"
+        "3rdparty/freetype/src/psnames/psnames.c",
+        "3rdparty/freetype/src/gzip/ftgzip.c"        -- Gzip 支持（用于 gzip 压缩的字体）
     )
 
     add_includedirs("3rdparty/freetype/include", {public = true})
 
-    -- 关键配置：禁用所有压缩支持，完全独立编译
+    -- 关键配置
     add_defines(
-        "FT2_BUILD_LIBRARY",        -- 构建库
-        "FT_CONFIG_OPTION_NO_GZIP", -- 禁用 gzip
-        "FT_CONFIG_OPTION_NO_BZIP2",  -- 禁用 bzip2
-        "FT_CONFIG_OPTION_NO_LZW"   -- 禁用 lzw
+        "FT2_BUILD_LIBRARY",         -- 构建库
+        "FT_CONFIG_OPTION_NO_BZIP2", -- 禁用 bzip2
+        "FT_CONFIG_OPTION_NO_LZW"    -- 禁用 lzw
+        -- 启用 gzip 支持（需要 zlib）
     )
+
+    -- 依赖 zlib（用于 gzip 压缩的字体）
+    add_deps("zlib")
 
     if is_plat("windows") then
         add_defines("_CRT_SECURE_NO_WARNINGS")
@@ -412,14 +438,14 @@ target("axmol")
         {public = true}
     )
 
-    -- 本地编译的第三方库
+    -- 本地编译的第三方库（全部导出为 public，以便依赖目标可以链接）
     add_deps(
         "yasio", "convert-utf", "unzip", "glad", "xxhash",
-        "zlib", "openssl", "glfw", "png", "jpeg-turbo", "stb"
+        "zlib", "openssl", "glfw", "png", "jpeg-turbo", "stb",
+        "freetype", "clipper2", "poly2tri", "simdjson", "box2d", "fmt",
+        "pugixml", "astcenc",
+        {public = true}
     )
-
-    -- 本地编译的库（作为 public 依赖）
-    add_deps("freetype", "clipper2", "poly2tri", "simdjson", "box2d", "fmt", {public = true})
 
     if is_plat("linux") then
         -- Linux 系统库
@@ -427,7 +453,10 @@ target("axmol")
         add_links("GL", {public = true})
     end
 
-    add_links("pthread")
+    -- pthread only needed on Linux
+    if is_plat("linux") then
+        add_links("pthread")
+    end
 
     add_defines(
         "AX_USE_WEBP=0", "AX_ENABLE_3D=1",
@@ -478,6 +507,8 @@ target("sdfgen")
             target:add("links", "SDFGen")
         end
     end)
+    -- 导出 SDFGen 头文件路径
+    add_includedirs("extensions/SDFGen/src", {public = true})
     add_deps("axmol")
 target_end()
 
@@ -496,8 +527,25 @@ target_end()
 target("axlua")
     set_kind("static")
 
-    -- Lua 绑定源文件 (只包含manual目录，auto目录可能为空或需要代码生成)
-    add_files("extensions/scripting/lua-bindings/manual/**/*.cpp")
+    -- 启用扩展功能宏定义
+    add_defines(
+        "AX_ENABLE_AUDIO=1",
+        "AX_ENABLE_PHYSICS=1",
+        "AX_ENABLE_3D=1"
+    )
+
+    -- Lua 绑定源文件 (包含manual和auto目录)
+    add_files(
+        "extensions/scripting/lua-bindings/manual/**/*.cpp",
+        "extensions/scripting/lua-bindings/auto/*.cpp"
+    )
+
+    -- 排除平台特定或可选的 UI 组件（WebView 需要 AX_ENABLE_MSEDGE_WEBVIEW2，MediaPlayer 需要 AX_ENABLE_MEDIA）
+    remove_files(
+        "extensions/scripting/lua-bindings/manual/ui/axlua_webview_manual.cpp",
+        "extensions/scripting/lua-bindings/manual/ui/axlua_video_manual.cpp",
+        "extensions/scripting/lua-bindings/auto/axlua_webview_auto.cpp"
+    )
 
     -- 包含目录（添加extensions/scripting以支持lua-bindings/路径）
     add_includedirs(
@@ -508,8 +556,11 @@ target("axlua")
         "extensions/spine/src",
         "extensions/spine/runtime/include",
         "extensions/fairygui/src",
+        "extensions/Particle3D/src",
         "extensions",
         "3rdparty/lua/tolua",
+        "3rdparty/llhttp/include",
+        "3rdparty/websocket-parser",
         {public = true}
     )
 

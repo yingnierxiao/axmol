@@ -1,0 +1,19 @@
+{
+    "items": {
+        "_MonoRuntimeComponentLinking": [
+            { "identity": "dynamic", "RuntimeIdentifier": "iossimulator-x64" },
+        ],
+        "_MonoRuntimeComponentSharedLibExt": [
+            { "identity": ".dylib", "RuntimeIdentifier": "iossimulator-x64" },
+        ],
+        "_MonoRuntimeComponentStaticLibExt": [
+            { "identity": ".a", "RuntimeIdentifier": "iossimulator-x64" },
+        ],
+        "_MonoRuntimeAvailableComponents": [
+            { "identity": "debugger", "RuntimeIdentifier": "iossimulator-x64" },
+{ "identity": "hot_reload", "RuntimeIdentifier": "iossimulator-x64" },
+{ "identity": "diagnostics_tracing", "RuntimeIdentifier": "iossimulator-x64" },
+{ "identity": "marshal-ilgen", "RuntimeIdentifier": "iossimulator-x64" },
+        ],
+    }
+}

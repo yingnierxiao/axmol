@@ -1,0 +1,14 @@
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\bin\Release\net8.0\Axmol.Scripting.deps.json
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\bin\Release\net8.0\Axmol.Scripting.runtimeconfig.json
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\bin\Release\net8.0\Axmol.Scripting.dll
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\bin\Release\net8.0\Axmol.Scripting.pdb
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.GeneratedMSBuildEditorConfig.editorconfig
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.AssemblyInfoInputs.cache
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.AssemblyInfo.cs
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.csproj.CoreCompileInputs.cache
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.sourcelink.json
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.dll
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\refint\Axmol.Scripting.dll
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.pdb
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\Axmol.Scripting.genruntimeconfig.cache
+D:\COP\cop_mytools\axmol\extensions\scripting\dotnet-bindings\managed\obj\Release\net8.0\ref\Axmol.Scripting.dll
